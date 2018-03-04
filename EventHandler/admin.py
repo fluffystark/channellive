@@ -27,7 +27,8 @@ class EventAdmin(admin.ModelAdmin):
                        'budget',
                        'start_date',
                        'end_date',
-                       'image',)
+                       'image',
+                       'location',)
         }),
     ]
     inline = [

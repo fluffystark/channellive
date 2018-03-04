@@ -29,6 +29,7 @@ class Event(models.Model):
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     image = models.ImageField(upload_to='event_pic', blank=True, null=True)
+    location = models.CharField(max_length=50, default="Cebu", blank=True, null=True)
 
     def __str__(self):
         return self.name

@@ -15,3 +15,7 @@ class EventViewSet(viewsets.ModelViewSet):
         queryset = Event.objects.all()
         serializer = EventSerializer(queryset, many=True)
         return Response(serializer.data)
+
+    # def create(self, request):
+    #     content = {}
+    #     return Response(content)

@@ -1,11 +1,17 @@
 from rest_framework import serializers
 from EventHandler.models import Event
-from UserProfile.serializers import BusinessSerializer
 
 
-class EventSerializer(serializers.HyperlinkedModelSerializer):
-    company = BusinessSerializer()
+class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ('name', 'description', 'budget', 'image', 'company')
+        fields = ('name',
+                  'description',
+                  'budget',
+                  'image',
+                  'location',
+                  'company',
+                  'category',
+                  'start_date',
+                  'end_date',)
