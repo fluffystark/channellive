@@ -17,24 +17,26 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework.routers import DefaultRouter
 
-from EventHandler import views as eventview
-from UserProfile import views as userview
+# from EventHandler import views as eventview
 from OpenTokHandler import views as tokview
+# from UserProfile import views as userview
 from django.conf.urls.static import static
 from channellive import settings
 
+
+from EventHandler.urls import router as eventRouter
+from UserProfile.urls import router as userRouter
 # separate url to their own apps
 
 router = DefaultRouter()
-router.register(r'events', eventview.EventViewSet)
-router.register(r'register', userview.UserViewSet)
+router.registry.extend(eventRouter.registry)
+router.registry.extend(userRouter.registry)
 
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls')),
-    url(r'^login/$', userview.LoginView.as_view(), name='login'),
     url(r'^opentok/$', tokview.OpenTokView.as_view(), name='opentok'),
 ]
 if settings.DEBUG is True:

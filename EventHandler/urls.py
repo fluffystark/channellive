@@ -1,8 +1,11 @@
-from django.conf.urls import url
+from django.conf.urls import include, url
+from rest_framework.routers import DefaultRouter
 
-from rest_framework.authtoken import views as authviews
+from EventHandler import views
 
+router = DefaultRouter()
+router.register(r'events', views.EventViewSet)
 
 urlpatterns = [
-    url(r'^api-token-auth/', authviews.obtain_auth_token)
+    url(r'^', include(router.urls)),
 ]
