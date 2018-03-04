@@ -46,11 +46,11 @@ class UserViewSet(viewsets.ModelViewSet):
                                                first_name=data['first_name'],
                                                last_name=data['last_name'],
                                                email=data['email'],)
-            # if 
-            new_biz = {
-                # "id"
-                # "company_name": 
-            }
+            print newUser
+            if data['is_business']:
+                new_biz = Business(user=newUser,
+                                   company_name=data['business_name'])
+                new_biz.save()
             content = {
                 "statusCode": "201",
                 "username": data['username'],

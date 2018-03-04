@@ -4,9 +4,14 @@ from UserProfile.models import Business
 
 
 class UserSerializer(serializers.ModelSerializer):
+    is_business = serializers.SerializerMethodField(method_name='is_business')
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'first_name', 'last_name', 'email')
+        fields = ('id', 'username', 'password', 'first_name', 'last_name', 'email',)
+
+    def is_business(self, obj):
+        return Business.objects.filter(user=obj).exists()
 
 
 class BusinessSerializer(serializers.ModelSerializer):

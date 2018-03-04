@@ -16,4 +16,4 @@ class RegisterForm(ModelForm):
 class BusinessForm(ModelForm):
     class Meta:
         model = Business
-        fields = ['company_name']
+        fields = ['company_name', 'user']
