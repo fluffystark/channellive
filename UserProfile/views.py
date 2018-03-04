@@ -6,10 +6,8 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from UserProfile.serializers import UserSerializer
 from UserProfile.models import Business
-
-# Create your views here.
+from UserProfile.serializers import UserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -41,11 +39,11 @@ class UserViewSet(viewsets.ModelViewSet):
             }
             stat = status.HTTP_409_CONFLICT
         else:
-            User.objects.create_user(username=data['username'],
-                                     password=data['password'],
-                                     first_name=data['first_name'],
-                                     last_name=data['last_name'],
-                                     email=data['email'],)
+            newUser = User.objects.create_user(username=data['username'],
+                                               password=data['password'],
+                                               first_name=data['first_name'],
+                                               last_name=data['last_name'],
+                                               email=data['email'],)
             # if 
             new_biz = {
                 # "id"
@@ -64,8 +62,8 @@ class LoginView(APIView):
 
     def get(self, request, format=None):
         content = {
-            'user': unicode(request.user),  # `django.contrib.auth.User` instance.
-            'auth': unicode(request.auth),  # None
+            'user': unicode(request.user),
+            'auth': unicode(request.auth),
         }
         return Response(content)
 

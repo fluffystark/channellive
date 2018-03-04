@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework.routers import DefaultRouter
+
 from EventHandler import views as eventview
 from UserProfile import views as userview
 from OpenTokHandler import views as tokview

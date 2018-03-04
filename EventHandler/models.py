@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.utils import timezone
+
 from UserProfile.models import Business
-# Create your mdataodels here.
 
 
 class Category(models.Model):

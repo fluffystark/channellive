@@ -1,6 +1,6 @@
-from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Business
+from rest_framework import serializers
+from UserProfile.models import Business
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
