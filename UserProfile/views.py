@@ -5,8 +5,10 @@ from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.views import APIView
+# from rest_framework.views import APIView
 from UserProfile.models import Business
+from UserProfile.serializers import BusinessSerializer
+from UserProfile.serializers import LoginSerializer
 from UserProfile.serializers import UserSerializer
 
 
@@ -58,18 +60,21 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(content, stat)
 
 
-class LoginView(APIView):
+class LoginViewSet(viewsets.ViewSet):
+    queryset = User.objects.all()
+    serializer_class = LoginSerializer
 
-    def get(self, request, format=None):
-        content = {
-            'user': unicode(request.user),
-            'auth': unicode(request.auth),
-        }
-        return Response(content)
+    def get_queryset(self):
+        return self.request.user
 
-    def post(self, request, format=None):
+    def create(self, request):
         obj = request.user
         is_business = Business.objects.filter(user=obj).exists()
         content = {'username': obj.get_username(),
                    'is_business': is_business, }
         return Response(content, status=status.HTTP_200_OK)
+
+
+class BusinessViewSet(viewsets.ModelViewSet):
+    queryset = Business.objects.all()
+    serializer_class = BusinessSerializer
