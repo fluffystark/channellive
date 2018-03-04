@@ -70,7 +70,8 @@ class LoginViewSet(viewsets.ViewSet):
     def create(self, request):
         obj = request.user
         is_business = Business.objects.filter(user=obj).exists()
-        content = {'username': obj.get_username(),
+        content = {'user_id': obj.id,
+                   'username': obj.get_username(),
                    'is_business': is_business, }
         return Response(content, status=status.HTTP_200_OK)
 
