@@ -6,6 +6,12 @@ from django.utils import timezone
 
 from UserProfile.models import Business
 
+REVIEW_CHOICES = {
+    (1, ("Pending")),
+    (2, ("Approved")),
+    (3, ("Rejected"))
+}
+
 
 class Category(models.Model):
     text = models.CharField(max_length=25)
@@ -30,6 +36,7 @@ class Event(models.Model):
     end_date = models.DateTimeField(blank=True, null=True)
     image = models.ImageField(upload_to='event_pic', blank=True, null=True)
     location = models.CharField(max_length=50, default="Cebu", blank=True, null=True)
+    review = models.IntegerField(choices=REVIEW_CHOICES, default=1)
 
     def __str__(self):
         return self.name

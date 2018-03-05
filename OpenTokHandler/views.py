@@ -2,8 +2,11 @@
 from __future__ import unicode_literals
 
 from rest_framework import views
+from rest_framework import viewsets
 from rest_framework.response import Response
-from .serializers import TokSerializer
+from OpenTokHandler.models import Livestream
+from OpenTokHandler.serializers import TokSerializer
+from OpenTokHandler.serializers import LivestreamSerializer
 
 from opentok import OpenTok
 # Create your views here.
@@ -27,3 +30,24 @@ class OpenTokView(views.APIView):
             'session_id': session_id,
             'token': token, }
         return Response(content)
+
+
+class LivestreamViewSet(viewsets.ViewSet):
+    serializer_class = LivestreamSerializer
+
+    def create(self, request):
+        data = request.data
+        if Livestream.objects.filter(
+           user=request.user
+           ).filter(
+            event=data['event']
+        ).exists():
+
+        else:
+            session = opentok.create_session()
+            session_id = session.session_id
+            token = opentok.generate_token(session_id)
+            new_livestream = Livestream(user=request.user,
+                                        event=data['event'],
+                                        session=session_id,
+                                        )

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from OpenTokHandler.models import Livestream
 
 
 class TokSerializer(serializers.Serializer):
@@ -6,3 +7,14 @@ class TokSerializer(serializers.Serializer):
 
     class Meta:
         fields = ('session_id')
+
+
+class LivestreamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Livestream
+        fields = ('user',
+                  'event',
+                  'is_live',
+                  'session',
+                  'votes',
+                  'views')

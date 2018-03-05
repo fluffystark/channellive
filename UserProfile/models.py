@@ -12,6 +12,7 @@ class Business(models.Model):
         on_delete=models.CASCADE,
         blank=True,
         related_name='company',
+        default=''
     )
 
     def __str__(self):

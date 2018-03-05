@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from UserProfile import views
 
 router = DefaultRouter()
-router.register(r'register', views.UserViewSet)
+router.register(r'register', views.UserViewSet, base_name='register')
 router.register(r'login', views.LoginViewSet)
 router.register(r'business', views.BusinessViewSet)
 
