@@ -8,6 +8,7 @@ class EventSerializer(serializers.ModelSerializer):
     business_id = serializers.SerializerMethodField('get_company')
     category_id = serializers.SerializerMethodField('get_category')
     status = serializers.SerializerMethodField()
+    start_date = serializers.DateTimeField()
 
     class Meta:
         model = Event

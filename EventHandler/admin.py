@@ -18,6 +18,10 @@ class EventInline(GenericTabularInline):
 
 
 class EventAdmin(admin.ModelAdmin):
+
+    def check_status(self, obj):
+        return obj.self_status()
+
     fieldsets = [
         (None, {
             'fields': ('name',
@@ -28,15 +32,15 @@ class EventAdmin(admin.ModelAdmin):
                        'start_date',
                        'end_date',
                        'image',
-                       'location',)
+                       'location',
+                       'pub_date',
+                       'check_status',)
         }),
     ]
+    readonly_fields = ('pub_date', 'check_status',)
     inline = [
         CategoryInline,
     ]
-
-    def check_status(self, obj):
-        return obj.self_status()
 
 
 admin.site.register(Event, EventAdmin)

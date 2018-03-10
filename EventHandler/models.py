@@ -31,7 +31,7 @@ class Event(models.Model):
         null=True,
     )
     budget = models.FloatField(default=100)
-    pub_date = models.DateTimeField(auto_now_add=True)
+    pub_date = models.DateTimeField(auto_now_add=True, blank=True)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     image = models.ImageField(upload_to='event_pic', blank=True, null=True)
@@ -43,7 +43,7 @@ class Event(models.Model):
 
     def self_status(self):
         now = timezone.now()
-        if now < self.pub_date:
+        if now < self.start_date:
             status = 'INCOMING'
         elif self.start_date < now < self.end_date:
             status = 'ONGOING'

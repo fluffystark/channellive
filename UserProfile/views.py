@@ -17,7 +17,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         data = request.data
-        print data
         new_user = {
             'username': data['username'],
             'password': data['password'],
