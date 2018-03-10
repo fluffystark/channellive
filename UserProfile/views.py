@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
-# from rest_framework.views import APIView
 from UserProfile.models import Business
 from UserProfile.serializers import BusinessSerializer
 from UserProfile.serializers import LoginSerializer

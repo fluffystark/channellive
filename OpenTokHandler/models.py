@@ -16,6 +16,10 @@ class Livestream(models.Model):
     votes = models.IntegerField(default=0)
     views = models.IntegerField(default=0)
 
+    def __str__(self):
+        name = self.user.username + "_" + self.event.name
+        return name
+
 
 class Viewer(models.Model):
     livestream = models.ForeignKey(Livestream, related_name='viewers', blank=True, default='')

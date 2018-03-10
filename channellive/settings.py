@@ -21,7 +21,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '8v5xz-p$7p2zc%a%h9%3+jo7y2e)mg!rs)=ri2t@&b4&x76rh4'
-
+TOK_APIKEY = '46071302'
+TOK_SECRETKEY = 'e0f223ec5212013442e01225024bad8f5df9c596'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -38,8 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'oauth2_provider',
-    'social_django',
-    # 'rest_framework_social_oauth2',
     'rest_framework',
     'rest_framework.authtoken',
     'EventHandler',

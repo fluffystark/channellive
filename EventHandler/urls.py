@@ -5,6 +5,7 @@ from EventHandler import views
 
 router = DefaultRouter()
 router.register(r'events', views.EventViewSet)
+router.register(r'categories', views.CategoryViewSet)
 
 urlpatterns = [
     url(r'^', include(router.urls)),
