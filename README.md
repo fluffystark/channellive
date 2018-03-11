@@ -13,3 +13,8 @@
     App responsible for registration
         - User
         - Business
+
+## 5. UserLogin
+    App is responsible for logging in
+        - User
+        - Business
