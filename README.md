@@ -9,3 +9,7 @@
 ## 3. UserProfile
 	Holds the Users and Business
 
+## 4. UserRegistration
+    App responsible for registration
+        - User
+        - Business

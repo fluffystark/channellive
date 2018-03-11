@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from EventHandler.models import Event
 from EventHandler.models import Category
+from dateutil.parser import parse
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -8,7 +9,7 @@ class EventSerializer(serializers.ModelSerializer):
     business_id = serializers.SerializerMethodField('get_company')
     category_id = serializers.SerializerMethodField('get_category')
     status = serializers.SerializerMethodField()
-    start_date = serializers.DateTimeField()
+    start_date = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -35,6 +36,16 @@ class EventSerializer(serializers.ModelSerializer):
 
     def get_status(self, obj):
         return obj.self_status()
+
+    def get_start_date(self, obj):
+        ret = parse(str(obj.start_date))
+        ret = {"year": ret.year,
+               "month": ret.month - 1,
+               "dayOfMonth": ret.day,
+               "hourOfDay": ret.hour,
+               "minute": ret.minute,
+               }
+        return ret
 
 
 class CategorySerializer(serializers.ModelSerializer):

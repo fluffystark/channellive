@@ -23,11 +23,13 @@ from channellive import settings
 from EventHandler.urls import router as eventRouter
 from OpenTokHandler.urls import router as tokRouter
 from UserProfile.urls import router as userRouter
+from UserRegistration.urls import router as userregRouter
 # separate url to their own apps
 
 router = DefaultRouter()
 router.registry.extend(eventRouter.registry)
 router.registry.extend(userRouter.registry)
+router.registry.extend(userregRouter.registry)
 router.registry.extend(tokRouter.registry)
 
 
