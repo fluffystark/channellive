@@ -8,7 +8,6 @@ from EventHandler.models import Event
 from OpenTokHandler.models import Livestream
 from OpenTokHandler.models import Viewer
 from OpenTokHandler.serializers import LivestreamSerializer
-from OpenTokHandler.serializers import ViewerSerializer
 
 from opentok import OpenTok
 from opentok import Roles

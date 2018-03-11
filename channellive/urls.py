@@ -24,12 +24,14 @@ from EventHandler.urls import router as eventRouter
 from OpenTokHandler.urls import router as tokRouter
 from UserProfile.urls import router as userRouter
 from UserRegistration.urls import router as userregRouter
+from UserLogin.urls import router as loginRouter
 # separate url to their own apps
 
 router = DefaultRouter()
 router.registry.extend(eventRouter.registry)
 router.registry.extend(userRouter.registry)
 router.registry.extend(userregRouter.registry)
+router.registry.extend(loginRouter.registry)
 router.registry.extend(tokRouter.registry)
 
 
