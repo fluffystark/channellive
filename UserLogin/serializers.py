@@ -5,4 +5,4 @@ from rest_framework import serializers
 class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'password',)
+        fields = ('username', 'password',)

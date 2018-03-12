@@ -18,6 +18,7 @@ class LoginViewSet(viewsets.ViewSet):
 
     def create(self, request):
         obj = request.user
+        print obj
         is_business = Business.objects.filter(user=obj).exists()
         content = {'user_id': obj.id,
                    'username': obj.get_username(),

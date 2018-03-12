@@ -13,8 +13,6 @@ class Livestream(models.Model):
     event = models.ForeignKey(Event, related_name='livestreams', blank=True, default='')
     is_live = models.BooleanField(default=True)
     session = models.CharField(max_length=200)
-    votes = models.IntegerField(default=0)
-    views = models.IntegerField(default=0)
 
     def __str__(self):
         name = self.user.username + "_" + self.event.name

@@ -8,6 +8,7 @@ from EventHandler.models import Event
 from OpenTokHandler.models import Livestream
 from OpenTokHandler.models import Viewer
 from OpenTokHandler.serializers import LivestreamSerializer
+from OpenTokHandler.serializers import ViewerSerializer
 
 from opentok import OpenTok
 from opentok import Roles
@@ -72,3 +73,11 @@ class SubscriberViewSet(viewsets.ModelViewSet):
                    'TOKEN_SUBSCRIBER': token,
                    'API_KEY': APIKey}
         return Response(content)
+
+
+class VoteViewSet(viewsets.ViewSet):
+    serializer_class = ViewerSerializer
+
+    def get_queryset(self):
+        object = self.request.data
+        return Viewer.objects.filter(livestream=object['livestream_id'], user=object['user_id'])
