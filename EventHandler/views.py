@@ -19,11 +19,10 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = None
-        if self.request.query_params.get('user_id', None):
-            user_id = self.request.query_params.get('user_id', None)
-            user = User.objects.get(pk=user_id)
-            if Business.objects.filter(user=user).exists():
-                business = Business.objects.filter(user=user)
+        if self.request.query_params.get('business_id', None):
+            pk = self.request.query_params.get('business_id', None)
+            if Business.objects.filter(pk=pk).exists():
+                business = Business.objects.get(pk=pk)
                 status = self.request.query_params.get('status', None)
                 if status == 'incoming':
                     queryset = Event.objects.filter(company=business,
@@ -76,15 +75,21 @@ class EventViewSet(viewsets.ModelViewSet):
                               end_date=parsed_end_date,
                               )
             new_event.save()
-            content = {
-                "statusCode": "201",
-                "message": "Event is currently pending",
-            }
+            content = "Event is currently pending"
         else:
-            content = {
-                "statusCode": "409",
-                "message": "Error in date inputted",
-            }
+            content = "Error in date inputted"
+        return Response(content)
+
+
+class HasEventViewSet(viewsets.ViewSet):
+
+    def retrieve(self, request, pk=None):
+        has_event = False
+        if Business.objects.filter(pk=pk):
+            business = Business.objects.get(pk=pk)
+            if business.events.all().count() > 0:
+                has_event = True
+        content = has_event
         return Response(content)
 
 

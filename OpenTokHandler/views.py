@@ -32,7 +32,6 @@ class LivestreamViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         data = request.data
-        print data
         if Livestream.objects.filter(user=data['user_id'], event=data['event_id']).exists():
             livestreamer = Livestream.objects.get(event=data['event_id'], user=data['user_id'])
             session_id = livestreamer.session

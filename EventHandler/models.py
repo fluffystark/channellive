@@ -50,3 +50,6 @@ class Event(models.Model):
         elif now >= self.end_date:
             status = 'ENDED'
         return status
+
+    def __unicode__(self):
+        return self.name
