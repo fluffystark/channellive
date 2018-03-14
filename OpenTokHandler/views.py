@@ -81,3 +81,4 @@ class VoteViewSet(viewsets.ViewSet):
     def get_queryset(self):
         object = self.request.data
         return Viewer.objects.filter(livestream=object['livestream_id'], user=object['user_id'])
+

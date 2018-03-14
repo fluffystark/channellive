@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django.contrib.auth.models import User
 from django.utils import timezone
 import datetime
 import pytz
@@ -14,12 +15,33 @@ from EventHandler.serializers import CategorySerializer
 
 
 class EventViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.all()
     serializer_class = EventSerializer
 
+    def get_queryset(self):
+        queryset = None
+        if self.request.query_params.get('user_id', None):
+            user_id = self.request.query_params.get('user_id', None)
+            user = User.objects.get(pk=user_id)
+            if Business.objects.filter(user=user).exists():
+                business = Business.objects.filter(user=user)
+                status = self.request.query_params.get('status', None)
+                if status == 'incoming':
+                    queryset = Event.objects.filter(company=business,
+                                                    start_date__gt=timezone.now())
+                elif status == 'ongoing':
+                    queryset = Event.objects.filter(company=business,
+                                                    start_date__lt=timezone.now(),
+                                                    end_date__gt=timezone.now())
+                elif status == 'ended':
+                    queryset = Event.objects.filter(company=business,
+                                                    end_date__lt=timezone.now())
+        else:
+            queryset = Event.objects.all()
+            print queryset
+        return queryset
+
     def list(self, request):
-        queryset = Event.objects.all()
-        serializer = EventSerializer(queryset, many=True)
+        serializer = EventSerializer(self.get_queryset(), many=True)
         return Response(serializer.data)
 
     def create(self, request):
