@@ -11,3 +11,6 @@ class Prize(models.Model):
     amount = models.FloatField(default=100)
     event = models.ForeignKey(Event, related_name='prizes', blank=True, null=True)
     user = models.ForeignKey(User, related_name='prizes', blank=True, null=True)
+
+    def __str__(self):
+        return self.event.name + "_" + self.title
