@@ -4,6 +4,18 @@ from EventHandler.models import Category
 from dateutil.parser import parse
 
 
+class FileUploadSerializer(serializers.ModelSerializer):
+    # event_id = serializers.SerializerMethodField('get_id')
+
+    class Meta:
+        model = Event
+        fields = ('id',
+                  'image',)
+
+    def get_id(self, obj):
+        return obj.id
+
+
 class EventSerializer(serializers.ModelSerializer):
     event_id = serializers.SerializerMethodField('get_id')
     business_id = serializers.SerializerMethodField('get_company')
@@ -57,6 +69,9 @@ class EventSerializer(serializers.ModelSerializer):
                "minute": ret.minute,
                }
         return ret
+
+    def get_image(self, obj):
+        return obj.eventimage
 
 
 class CategorySerializer(serializers.ModelSerializer):

@@ -28,7 +28,7 @@ class LivestreamViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         event = self.request.query_params.get('event_id', None)
-        return Livestream.objects.filter(is_live=True, event=event)
+        return Livestream.objects.filter(event=event)
 
     def create(self, request):
         data = request.data

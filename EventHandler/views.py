@@ -7,11 +7,14 @@ import datetime
 import pytz
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.parsers import FormParser
+from rest_framework.parsers import MultiPartParser
 from EventHandler.models import Event
 from EventHandler.models import Category
 from UserProfile.models import Business
 from EventHandler.serializers import EventSerializer
 from EventHandler.serializers import CategorySerializer
+from EventHandler.serializers import FileUploadSerializer
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -45,6 +48,8 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         data = request.data
+        description = request.data['description']
+        print data
         now = timezone.now()
         new_event = None
         start_date = data['start_date']
@@ -68,14 +73,15 @@ class EventViewSet(viewsets.ModelViewSet):
             company = Business.objects.get(pk=data['business_id'])
             new_event = Event(company=company,
                               category=category,
-                              description=data['description'],
+                              description=description,
                               name=data['name'],
                               budget=float(data['budget'][1:]),
                               start_date=parsed_start_date,
                               end_date=parsed_end_date,
                               )
             new_event.save()
-            content = "Event is currently pending"
+            content = new_event.id
+            print content
         else:
             content = "Error in date inputted"
         return Response(content)
@@ -96,3 +102,20 @@ class HasEventViewSet(viewsets.ViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+
+class FileUploadViewSet(viewsets.ViewSet):
+    parser_class = (FormParser, MultiPartParser, )
+    serializer_class = FileUploadSerializer
+
+    def create(self, request):
+        obj = self.data['file']
+        print obj
+        # obj = request.data['image']
+        # print obj
+        content = {}
+        # if Event.objects.filter(pk=obj['event_id']):
+        #     event = Event.objects.get(pk=obj['event_id'])
+        #     event.image = obj['image']
+        #     event.save()
+        return Response(content)

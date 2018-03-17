@@ -7,7 +7,7 @@ router = DefaultRouter()
 router.register(r'events', views.EventViewSet, base_name='events')
 router.register(r'categories', views.CategoryViewSet, base_name='categories')
 router.register(r'hasevent', views.HasEventViewSet, base_name='hasevent')
-
+# router.register(r'file', views.FileUploadViewSet, base_name='file')
 
 urlpatterns = [
     url(r'^', include(router.urls)),
