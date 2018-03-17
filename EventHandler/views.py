@@ -49,7 +49,6 @@ class EventViewSet(viewsets.ModelViewSet):
     def create(self, request):
         data = request.data
         description = request.data['description']
-        print data
         now = timezone.now()
         new_event = None
         start_date = data['start_date']
@@ -102,20 +101,3 @@ class HasEventViewSet(viewsets.ViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-
-
-class FileUploadViewSet(viewsets.ViewSet):
-    parser_class = (FormParser, MultiPartParser, )
-    serializer_class = FileUploadSerializer
-
-    def create(self, request):
-        obj = self.data['file']
-        print obj
-        # obj = request.data['image']
-        # print obj
-        content = {}
-        # if Event.objects.filter(pk=obj['event_id']):
-        #     event = Event.objects.get(pk=obj['event_id'])
-        #     event.image = obj['image']
-        #     event.save()
-        return Response(content)
