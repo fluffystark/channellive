@@ -17,7 +17,7 @@ class FileUploadViewSet(viewsets.ViewSet):
 
     def create(self, request):
         obj = request.data
-        content = {}
+        content = "yeyyeyeyeyeyeye"
         if Event.objects.filter(pk=obj['event_id']):
             event = Event.objects.get(pk=obj['event_id'])
             new_img = EventImage(file=obj['file'], event=event)

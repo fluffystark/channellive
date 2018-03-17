@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from rest_framework import viewsets
-from rest_framework.response import Response
 from PrizeHandler.serializers import PrizeSerializer
 from PrizeHandler.models import Prize
 

@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import User
-from django.utils import timezone
 import datetime
 import pytz
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.parsers import FormParser
-from rest_framework.parsers import MultiPartParser
 from EventHandler.models import Event
 from EventHandler.models import Category
 from UserProfile.models import Business
 from EventHandler.serializers import EventSerializer
 from EventHandler.serializers import CategorySerializer
-from EventHandler.serializers import FileUploadSerializer
 
 
 class EventViewSet(viewsets.ModelViewSet):
