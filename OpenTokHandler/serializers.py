@@ -16,6 +16,7 @@ class LivestreamSerializer(serializers.ModelSerializer):
         fields = ('livestream_id',
                   'user_id',
                   'event_id',
+                  'archive',
                   'is_live',
                   'username',
                   'session',

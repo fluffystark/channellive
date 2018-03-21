@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import requests
+import time
+import uuid
+import jwt
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -13,10 +17,8 @@ from OpenTokHandler.serializers import ViewerSerializer
 from opentok import OpenTok
 from opentok import Roles
 from opentok import MediaModes
+from opentok import ArchiveModes
 from django.conf import settings
-# Create your views here.
-
-# api key on settings
 
 APIKey = settings.TOK_APIKEY
 secretkey = settings.TOK_SECRETKEY
@@ -28,31 +30,32 @@ class LivestreamViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         event = self.request.query_params.get('event_id', None)
-        return Livestream.objects.filter(event=event)
+        queryset = Livestream.objects.filter(event=event)
+        isLive = self.request.query_params.get('is_live', None)
+        print type(isLive)
+        if isLive == u'true':
+            queryset = queryset.filter(is_live=True)
+        else:
+            queryset = queryset.filter(is_live=False)
+        return queryset
 
     def create(self, request):
         data = request.data
-        if Livestream.objects.filter(user=data['user_id'], event=data['event_id']).exists():
-            livestreamer = Livestream.objects.get(event=data['event_id'], user=data['user_id'])
-            session_id = livestreamer.session
-            token = opentok.generate_token(session_id, Roles.publisher)
-            content = {'SESSION_ID': session_id,
-                       'TOKEN_PUBLISHER': token,
-                       'API_KEY': APIKey}
-        else:
-            event_used = Event.objects.get(pk=data['event_id'])
-            session = opentok.create_session(media_mode=MediaModes.routed)
-            session_id = session.session_id
-            token = opentok.generate_token(session_id, Roles.publisher)
-            user = User.objects.get(pk=data['user_id'])
-            livestreamer = Livestream(user=user,
-                                      event=event_used,
-                                      session=session_id,
-                                      )
-            livestreamer.save()
-            content = {'SESSION_ID': session_id,
-                       'TOKEN_PUBLISHER': token,
-                       'API_KEY': APIKey}
+        # change objects to just _id
+        event_used = Event.objects.get(pk=data['event_id'])
+        session = opentok.create_session(media_mode=MediaModes.routed)
+        session_id = session.session_id
+        token = opentok.generate_token(session_id, Roles.publisher)
+        user = User.objects.get(pk=data['user_id'])
+        livestreamer = Livestream(user=user,
+                                  event=event_used,
+                                  session=session_id,
+                                  )
+        livestreamer.save()
+        content = {'SESSION_ID': session_id,
+                   'TOKEN_PUBLISHER': token,
+                   'API_KEY': APIKey,
+                   'livestreamId': livestreamer.id}
         return Response(content)
 
 
@@ -62,7 +65,8 @@ class SubscriberViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None):
         livestreamer = self.get_object()
-        if not Viewer.objects.filter(livestream=livestreamer.id, user=livestreamer.user.id).exists():
+        if not Viewer.objects.filter(livestream=livestreamer.id,
+                                     user=livestreamer.user.id).exists():
             viewer = Viewer(livestream=livestreamer,
                             user=livestreamer.user)
             viewer.save()
@@ -79,5 +83,36 @@ class VoteViewSet(viewsets.ViewSet):
 
     def get_queryset(self):
         object = self.request.data
-        return Viewer.objects.filter(livestream=object['livestream_id'], user=object['user_id'])
+        return Viewer.objects.filter(livestream=object['livestream_id'],
+                                     user=object['user_id'])
 
+
+class EndStreamViewSet(viewsets.ModelViewSet):
+    serializer_class = LivestreamSerializer
+    queryset = Livestream.objects.all()
+
+    def retrieve(self, request, pk=None):
+        livestreamer = self.get_object()
+        livestreamer.is_live = False
+        livestreamer.save()
+        content = "End"
+        return Response(content)
+
+
+class ArchiveViewSet(viewsets.ModelViewSet):
+    serializer_class = LivestreamSerializer
+    queryset = Livestream.objects.all()
+
+    def retrieve(self, request, pk=None):
+        livestreamer = self.get_object()
+        content = {}
+        if livestreamer.archive == '':
+            archive = opentok.start_archive(livestreamer.session,
+                                            name=u'Important Presentation')
+            livestreamer.archive = archive.id
+            livestreamer.is_live = True
+            livestreamer.save()
+        else:
+            livestreamer.is_live = not livestreamer.is_live
+            livestreamer.save()
+        return Response(content)

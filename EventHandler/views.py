@@ -17,25 +17,20 @@ class EventViewSet(viewsets.ModelViewSet):
     serializer_class = EventSerializer
 
     def get_queryset(self):
-        queryset = None
+        queryset = Event.objects.all()
         if self.request.query_params.get('business_id', None):
             pk = self.request.query_params.get('business_id', None)
             if Business.objects.filter(pk=pk).exists():
                 business = Business.objects.get(pk=pk)
-                status = self.request.query_params.get('status', None)
-                if status == 'incoming':
-                    queryset = Event.objects.filter(company=business,
-                                                    start_date__gt=timezone.now())
-                elif status == 'ongoing':
-                    queryset = Event.objects.filter(company=business,
-                                                    start_date__lt=timezone.now(),
-                                                    end_date__gt=timezone.now())
-                elif status == 'ended':
-                    queryset = Event.objects.filter(company=business,
-                                                    end_date__lt=timezone.now())
-        else:
-            queryset = Event.objects.all()
-            print queryset
+                queryset = queryset.filter(business=business)
+        status = self.request.query_params.get('status', None)
+        if status == 'incoming':
+            queryset = queryset.filter(start_date__gt=timezone.now())
+        elif status == 'ongoing':
+            queryset = queryset.filter(start_date__lt=timezone.now(),
+                                       end_date__gt=timezone.now())
+        elif status == 'ended':
+            queryset = queryset.filter(end_date__lt=timezone.now())
         return queryset
 
     def list(self, request):
@@ -48,6 +43,7 @@ class EventViewSet(viewsets.ModelViewSet):
         now = timezone.now()
         new_event = None
         start_date = data['start_date']
+        content = None
         parsed_start_date = datetime.datetime(start_date['year'],
                                               start_date['month'] + 1,
                                               start_date['dayOfMonth'],
@@ -65,20 +61,19 @@ class EventViewSet(viewsets.ModelViewSet):
                                             )
         if now <= parsed_start_date < parsed_end_date:
             category = Category.objects.get(pk=data['category_id'])
-            company = Business.objects.get(pk=data['business_id'])
-            new_event = Event(company=company,
+            business = Business.objects.get(pk=data['business_id'])
+            new_event = Event(business=business,
                               category=category,
-                              description=description,
+                              description=description[:239],
                               name=data['name'],
-                              budget=float(data['budget'][1:]),
+                              budget=float(data['budget']),
                               start_date=parsed_start_date,
                               end_date=parsed_end_date,
                               )
             new_event.save()
             content = new_event.id
-            print content
         else:
-            content = "Error in date inputted"
+            content = -1
         return Response(content)
 
 

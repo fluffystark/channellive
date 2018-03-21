@@ -37,19 +37,22 @@ class UserRegistrationViewSet(viewsets.ViewSet):
             }
             stat = status.HTTP_409_CONFLICT
         else:
+            business_id = -1
             newUser = User.objects.create_user(username=data['username'],
                                                password=data['password'],
                                                first_name=data['first_name'],
                                                last_name=data['last_name'],
                                                email=data['email'],)
-            print newUser
             if data['is_business']:
-                new_biz = Business(user=newUser,
-                                   company_name=data['business_name'])
-                new_biz.save()
+                new_business = Business(user=newUser,
+                                        company_name=data['business_name'])
+                new_business.save()
+                business_id = new_business.id
             content = {
                 "statusCode": "201",
+                "user_id": newUser.id,
                 "username": data['username'],
+                "business_id": business_id,
                 "message": "Account Successfully Created",
             }
             stat = status.HTTP_201_CREATED

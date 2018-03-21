@@ -5,6 +5,7 @@ from django.db import models
 from django.utils import timezone
 
 from UserProfile.models import Business
+from FileUpload.models import EventImage
 
 REVIEW_CHOICES = {
     (1, ("Pending")),
@@ -22,33 +23,42 @@ class Category(models.Model):
 
 class Event(models.Model):
     name = models.CharField(max_length=50)
-    description = models.CharField(max_length=100)
-    category = models.ForeignKey(Category, related_name='events', default=1)
-    company = models.ForeignKey(
-        Business,
-        related_name='events',
-        blank=True,
-        null=True,
-    )
+    description = models.CharField(max_length=240)
+    category = models.ForeignKey(Category,
+                                 related_name='events',
+                                 default=1)
+    business = models.ForeignKey(Business,
+                                 related_name='events',
+                                 blank=True,
+                                 null=True,)
+    image = models.OneToOneField(EventImage,
+                                 on_delete=models.CASCADE,
+                                 blank=True,
+                                 related_name='event',
+                                 null=True)
     budget = models.FloatField(default=100)
     pub_date = models.DateTimeField(auto_now_add=True, blank=True)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
-    image = models.ImageField(upload_to='event_pic', blank=True, null=True)
-    location = models.CharField(max_length=50, default="Cebu", blank=True, null=True)
-    review = models.IntegerField(choices=REVIEW_CHOICES, default=1)
+    location = models.CharField(max_length=50,
+                                default="Cebu",
+                                blank=True,
+                                null=True)
+    review = models.SmallIntegerField(choices=REVIEW_CHOICES, default=1)
 
     def __str__(self):
         return self.name
 
     def self_status(self):
-        now = timezone.now()
-        if now < self.start_date:
-            status = 'INCOMING'
-        elif self.start_date < now < self.end_date:
-            status = 'ONGOING'
-        elif now >= self.end_date:
-            status = 'ENDED'
+        now = timezone.localtime(timezone.now())
+        status = 'NONE'
+        if self.start_date is not None:
+            if now < self.start_date:
+                status = 'INCOMING'
+            elif self.start_date < now < self.end_date:
+                status = 'ONGOING'
+            elif now >= self.end_date:
+                status = 'ENDED'
         return status
 
     def __unicode__(self):

@@ -9,10 +9,19 @@ from EventHandler.models import Event
 
 
 class Livestream(models.Model):
-    user = models.ForeignKey(User, related_name='livestreams', blank=True, default='')
-    event = models.ForeignKey(Event, related_name='livestreams', blank=True, default='')
-    is_live = models.BooleanField(default=True)
+    user = models.ForeignKey(User,
+                             related_name='livestreams',
+                             blank=True,
+                             default='')
+    event = models.ForeignKey(Event,
+                              related_name='livestreams',
+                              blank=True,
+                              default='')
+    is_live = models.BooleanField(default=False)
     session = models.CharField(max_length=200)
+    archive = models.CharField(max_length=200,
+                               blank=True,
+                               default='')
 
     def __str__(self):
         name = self.user.username + "_" + self.event.name
@@ -20,6 +29,12 @@ class Livestream(models.Model):
 
 
 class Viewer(models.Model):
-    livestream = models.ForeignKey(Livestream, related_name='viewers', blank=True, default='')
-    user = models.ForeignKey(User, related_name='viewers', blank=True, default='')
+    livestream = models.ForeignKey(Livestream,
+                                   related_name='viewers',
+                                   blank=True,
+                                   default='')
+    user = models.ForeignKey(User,
+                             related_name='viewers',
+                             blank=True,
+                             default='')
     has_voted = models.BooleanField(default=False)
