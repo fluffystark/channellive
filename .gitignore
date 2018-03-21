@@ -1,6 +1,10 @@
 *.log
 *.pot
 *.pyc
+*.jpg
+*.jpeg
+*.png
+*.gif
 __pycache__/
 local_settings.py
 db.sqlite3
