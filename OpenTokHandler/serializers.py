@@ -39,7 +39,7 @@ class LivestreamSerializer(serializers.ModelSerializer):
         return Viewer.objects.filter(livestream=obj.pk).count()
 
     def get_votes(self, obj):
-        return Viewer.objects.filter(livestream=obj.pk, has_voted=True).count()
+        return Viewer.objects.filter(livestream=obj.pk, vote=True).count()
 
 
 class ViewerSerializer(serializers.ModelSerializer):
@@ -47,9 +47,10 @@ class ViewerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Viewer
-        fields = ('livestream_id',
+        fields = ('id',
+                  'livestream_id',
                   'user_id',
-                  'has_voted')
+                  'vote')
 
     def get_user(self, obj):
         return obj.user.pk

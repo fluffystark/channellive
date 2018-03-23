@@ -37,4 +37,4 @@ class Viewer(models.Model):
                              related_name='viewers',
                              blank=True,
                              default='')
-    has_voted = models.BooleanField(default=False)
+    vote = models.BooleanField(default=False)

@@ -74,17 +74,21 @@ class SubscriberViewSet(viewsets.ModelViewSet):
         token = opentok.generate_token(session_id, Roles.subscriber)
         content = {'SESSION_ID': session_id,
                    'TOKEN_SUBSCRIBER': token,
-                   'API_KEY': APIKey}
+                   'API_KEY': APIKey,
+                   'viewer_id': viewer.id}
         return Response(content)
 
 
-class VoteViewSet(viewsets.ViewSet):
+class VoteViewSet(viewsets.ModelViewSet):
     serializer_class = ViewerSerializer
+    queryset = Viewer.objects.all()
 
-    def get_queryset(self):
-        object = self.request.data
-        return Viewer.objects.filter(livestream=object['livestream_id'],
-                                     user=object['user_id'])
+    def retrieve(self, request, pk=None):
+        viewer = self.get_object()
+        viewer.vote = not viewer.vote
+        viewer.save()
+        content = "Success"
+        return Response(content)
 
 
 class EndStreamViewSet(viewsets.ModelViewSet):
