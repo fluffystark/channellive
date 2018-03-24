@@ -1,7 +1,7 @@
+from dateutil.parser import parse
 from rest_framework import serializers
 from EventHandler.models import Event
 from EventHandler.models import Category
-from dateutil.parser import parse
 
 
 class EventSerializer(serializers.ModelSerializer):

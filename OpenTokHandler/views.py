@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import User
+from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.response import Response
-from EventHandler.models import Event
 from OpenTokHandler.models import Livestream
 from OpenTokHandler.models import Viewer
 from OpenTokHandler.serializers import LivestreamSerializer
@@ -13,7 +12,6 @@ from OpenTokHandler.serializers import ViewerSerializer
 from opentok import OpenTok
 from opentok import Roles
 from opentok import MediaModes
-from django.conf import settings
 
 APIKey = settings.TOK_APIKEY
 secretkey = settings.TOK_SECRETKEY
@@ -36,14 +34,11 @@ class LivestreamViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         data = request.data
-        # change objects to just _id
-        event_used = Event.objects.get(pk=data['event_id'])
         session = opentok.create_session(media_mode=MediaModes.routed)
         session_id = session.session_id
         token = opentok.generate_token(session_id, Roles.publisher)
-        user = User.objects.get(pk=data['user_id'])
-        livestreamer = Livestream(user=user,
-                                  event=event_used,
+        livestreamer = Livestream(user_id=data['user_id'],
+                                  event_id=data['event_id'],
                                   session=session_id,
                                   )
         livestreamer.save()
@@ -60,21 +55,23 @@ class SubscriberViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None):
         livestreamer = self.get_object()
+        user_id = self.request.query_params.get('user_id', None)
         viewer = None
-        if not Viewer.objects.filter(livestream=livestreamer.id,
-                                     user=livestreamer.user.id).exists():
-            viewer = Viewer(livestream=livestreamer,
-                            user=livestreamer.user)
-            viewer.save()
-        else:
+        if Viewer.objects.filter(livestream=livestreamer.id,
+                                 user_id=user_id).exists():
             viewer = Viewer.objects.get(livestream=livestreamer.id,
-                                        user=livestreamer.user.id)
+                                        user_id=user_id)
+        else:
+            viewer = Viewer(livestream=livestreamer,
+                            user_id=user_id)
+            viewer.save()
         session_id = livestreamer.session
         token = opentok.generate_token(session_id, Roles.subscriber)
         content = {'SESSION_ID': session_id,
                    'TOKEN_SUBSCRIBER': token,
                    'API_KEY': APIKey,
-                   'viewer_id': viewer.id}
+                   'viewer_id': viewer.id,
+                   'viewer_vote': viewer.vote}
         return Response(content)
 
 
@@ -86,7 +83,7 @@ class VoteViewSet(viewsets.ModelViewSet):
         viewer = self.get_object()
         viewer.vote = not viewer.vote
         viewer.save()
-        content = "Success"
+        content = viewer.vote
         return Response(content)
 
 

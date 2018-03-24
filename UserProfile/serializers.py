@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from UserProfile.models import Business
-from EventHandler.models import Event
 
 
 class BusinessSerializer(serializers.ModelSerializer):

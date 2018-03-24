@@ -8,7 +8,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'first_name', 'last_name', 'email',)
+        fields = ('username',
+                  'password',
+                  'first_name',
+                  'last_name',
+                  'email',)
 
     def is_business(self, obj):
         return Business.objects.filter(user=obj).exists()
