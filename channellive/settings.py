@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'event',
     'file_upload',
+    'notification',
     'user_profile',
     'OpenTokHandler',
 ]

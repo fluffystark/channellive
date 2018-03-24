@@ -56,8 +56,8 @@ class EventViewSet(viewsets.ModelViewSet):
         now = timezone.now()
         new_event = None
         start_date = data['start_date']
+        end_date = data['end_date']
         content = None
-        print start_date
         parsed_start_date = datetime.datetime(start_date['year'],
                                               start_date['month'] + 1,
                                               start_date['dayOfMonth'],
@@ -65,7 +65,6 @@ class EventViewSet(viewsets.ModelViewSet):
                                               start_date['minute'],
                                               tzinfo=pytz.UTC
                                               )
-        end_date = data['end_date']
         parsed_end_date = datetime.datetime(end_date['year'],
                                             end_date['month'] + 1,
                                             end_date['dayOfMonth'],
