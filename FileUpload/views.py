@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
 from FileUpload.serializers import FileSerializer
 from FileUpload.models import EventImage
-from EventHandler.models import Event
+from event.models import Event
 
 # Create your views here.
 

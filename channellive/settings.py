@@ -38,13 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'oauth2_provider',
     'rest_framework',
     'rest_framework.authtoken',
-    'EventHandler',
+    'event',
     'FileUpload',
     'PrizeHandler',
-    'UserProfile',
+    'user_profile',
     'OpenTokHandler',
 ]
 
@@ -71,8 +70,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                # 'social_django.context_processors.backends',
-                # 'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -140,13 +137,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
-    # 'DEFAULT_PERMISSION_CLASSES': (
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ),
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
-        # 'oauth2_provider.ext.rest_framework.OAuth2Authentication',
-        # 'rest_framework_social_oauth2.authentication.SocialAuthentication',
     )
 }

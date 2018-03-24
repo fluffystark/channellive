@@ -20,11 +20,11 @@ from rest_framework.routers import DefaultRouter
 
 from channellive import settings
 
-from EventHandler.urls import router as eventRouter
+from event.urls import router as eventRouter
 from FileUpload.urls import router as fileuploadRouter
 from PrizeHandler.urls import router as prizeRouter
 from OpenTokHandler.urls import router as tokRouter
-from UserProfile.urls import router as userRouter
+from user_profile.urls import router as userRouter
 # separate url to their own apps
 
 router = DefaultRouter()
