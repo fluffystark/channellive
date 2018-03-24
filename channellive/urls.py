@@ -25,7 +25,6 @@ from FileUpload.urls import router as fileuploadRouter
 from PrizeHandler.urls import router as prizeRouter
 from OpenTokHandler.urls import router as tokRouter
 from UserProfile.urls import router as userRouter
-from UserRegistration.urls import router as userregRouter
 from UserLogin.urls import router as loginRouter
 # separate url to their own apps
 
@@ -34,7 +33,6 @@ router.registry.extend(eventRouter.registry)
 router.registry.extend(fileuploadRouter.registry)
 router.registry.extend(prizeRouter.registry)
 router.registry.extend(userRouter.registry)
-router.registry.extend(userregRouter.registry)
 router.registry.extend(loginRouter.registry)
 router.registry.extend(tokRouter.registry)
 

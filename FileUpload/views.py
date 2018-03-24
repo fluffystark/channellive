@@ -25,3 +25,5 @@ class FileUploadViewSet(viewsets.ViewSet):
             event.image = new_img
             event.save()
         return Response(content)
+
+# move to eventhandler

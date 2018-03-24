@@ -25,3 +25,6 @@ class LoginViewSet(viewsets.ViewSet):
                    'username': obj.get_username(),
                    'business_id': business_id, }
         return Response(content, status=status.HTTP_200_OK)
+
+# COMBINE WITH PROFILE AND REGISTRATION
+# RENAME FOLDER SOMETHING_SOMETHING

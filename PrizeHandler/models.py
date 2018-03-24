@@ -20,6 +20,8 @@ class Prize(models.Model):
                              blank=True,
                              null=True)
 
+    # FILL BLANK THEN REMOVE NULL AND BLANK
+
     def __str__(self):
         return self.event.name + "_" + self.title
 

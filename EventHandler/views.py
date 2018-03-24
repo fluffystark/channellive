@@ -100,3 +100,7 @@ class HasEventViewSet(viewsets.ViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+# make fixtures
+# check loaddata
+# dumpdata

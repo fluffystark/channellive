@@ -5,6 +5,7 @@ from UserProfile import views
 
 router = DefaultRouter()
 router.register(r'business', views.BusinessViewSet, base_name='business')
+router.register(r'register', views.UserRegistrationViewSet, base_name='register')
 
 urlpatterns = [
     url(r'^', include(router.urls)),

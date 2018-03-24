@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'PrizeHandler',
     'UserProfile',
     'UserLogin',
-    'UserRegistration',
     'OpenTokHandler',
 ]
 
