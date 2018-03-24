@@ -24,7 +24,6 @@ class UserRegistrationViewSet(viewsets.ViewSet):
         data = request.data
         user_serializer = UserRegistrationSerializer(data=data)
         content = {}
-        stat = None
         if user_serializer.is_valid():
             new_user = user_serializer.save()
             business_id = -1
@@ -42,17 +41,25 @@ class UserRegistrationViewSet(viewsets.ViewSet):
             }
             return Response(content, status.HTTP_201_CREATED)
         if 'username' in user_serializer.errors:
-            content = {
-                "statusCode": "409",
-                "error": "Conflict",
-                "message": "Username already exist"
-            }
-            stat = status.HTTP_409_CONFLICT
+            content = "Username already exist"
         elif 'email' in user_serializer.errors:
-            content = {
-                "statusCode": "409",
-                "error": "Conflict",
-                "message": "Email already exist"
-            }
-            stat = status.HTTP_409_CONFLICT
-        return Response(content, stat)
+            content = "Email already exist"
+        return Response(content, status.HTTP_409_CONFLICT)
+
+
+class LoginViewSet(viewsets.ViewSet):
+    queryset = User.objects.all()
+
+    def get_queryset(self):
+        return self.request.user
+
+    def create(self, request):
+        obj = request.user
+        business_id = -1
+        business = Business.objects.filter(user=obj).first()
+        if business is not None:
+            business_id = business.pk
+        content = {'user_id': obj.id,
+                   'username': obj.get_username(),
+                   'business_id': business_id, }
+        return Response(content, status=status.HTTP_200_OK)

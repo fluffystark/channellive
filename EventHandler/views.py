@@ -104,3 +104,4 @@ class CategoryViewSet(viewsets.ModelViewSet):
 # make fixtures
 # check loaddata
 # dumpdata
+# celery oh no

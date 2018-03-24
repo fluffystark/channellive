@@ -20,7 +20,7 @@ class Prize(models.Model):
                              blank=True,
                              null=True)
 
-    # FILL BLANK THEN REMOVE NULL AND BLANK
+    # FILL BLANK THEN REMOVE NULL AND BLANK OR DELETE DB
 
     def __str__(self):
         return self.event.name + "_" + self.title
@@ -42,3 +42,7 @@ class Prize(models.Model):
             firstPrize.save()
             secondPrize.save()
             thirdPrize.save()
+
+    # MAKE ANOTHER FILE SIGNALS.PY
+    # COMBINE WITH EVENTHANDLER
+    # bulk create

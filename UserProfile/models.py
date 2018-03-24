@@ -14,7 +14,7 @@ class Business(models.Model):
         related_name='company',
         default=''
     )
-    # REMOVE DEFAULT
+    # REMOVE DEFAULT AND BLANK
 
     def __str__(self):
         return self.company_name

@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'FileUpload',
     'PrizeHandler',
     'UserProfile',
-    'UserLogin',
     'OpenTokHandler',
 ]
 
