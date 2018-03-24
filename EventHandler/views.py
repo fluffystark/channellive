@@ -18,12 +18,13 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Event.objects.all()
-        if self.request.query_params.get('business_id', None):
-            pk = self.request.query_params.get('business_id', None)
-            if Business.objects.filter(pk=pk).exists():
-                business = Business.objects.get(pk=pk)
-                queryset = queryset.filter(business=business)
         status = self.request.query_params.get('status', None)
+        pk = self.request.query_params.get('business_id', None)
+        review = self.request.query_params.get('review', None)
+        if Business.objects.filter(pk=pk).exists():
+            business = Business.objects.get(pk=pk)
+            queryset = queryset.filter(business=business)
+
         if status == 'incoming':
             queryset = queryset.filter(start_date__gt=timezone.now())
         elif status == 'ongoing':
@@ -31,6 +32,13 @@ class EventViewSet(viewsets.ModelViewSet):
                                        end_date__gt=timezone.now())
         elif status == 'ended':
             queryset = queryset.filter(end_date__lt=timezone.now())
+
+        if review == 'pending':
+            queryset = queryset.filter(review=1)
+        elif review == 'approved':
+            queryset = queryset.filter(review=2)
+        elif review == 'rejected':
+            queryset = queryset.filter(review=3)
         return queryset
 
     def list(self, request):

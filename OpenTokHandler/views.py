@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import requests
-import time
-import uuid
-import jwt
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -17,7 +13,6 @@ from OpenTokHandler.serializers import ViewerSerializer
 from opentok import OpenTok
 from opentok import Roles
 from opentok import MediaModes
-from opentok import ArchiveModes
 from django.conf import settings
 
 APIKey = settings.TOK_APIKEY
@@ -65,11 +60,15 @@ class SubscriberViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None):
         livestreamer = self.get_object()
+        viewer = None
         if not Viewer.objects.filter(livestream=livestreamer.id,
                                      user=livestreamer.user.id).exists():
             viewer = Viewer(livestream=livestreamer,
                             user=livestreamer.user)
             viewer.save()
+        else:
+            viewer = Viewer.objects.get(livestream=livestreamer.id,
+                                        user=livestreamer.user.id)
         session_id = livestreamer.session
         token = opentok.generate_token(session_id, Roles.subscriber)
         content = {'SESSION_ID': session_id,
@@ -110,9 +109,9 @@ class ArchiveViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None):
         livestreamer = self.get_object()
         content = {}
-        if livestreamer.archive == '':
+        if livestreamer.archive == "":
             archive = opentok.start_archive(livestreamer.session,
-                                            name=u'Important Presentation')
+                                            name=u'ChannelLive')
             livestreamer.archive = archive.id
             livestreamer.is_live = True
             livestreamer.save()

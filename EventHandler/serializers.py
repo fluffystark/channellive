@@ -12,6 +12,7 @@ class EventSerializer(serializers.ModelSerializer):
     start_date = serializers.SerializerMethodField()
     end_date = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
+    review = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -25,6 +26,7 @@ class EventSerializer(serializers.ModelSerializer):
                   'location',
                   'start_date',
                   'end_date',
+                  'review',
                   'status',)
 
     def get_id(self, obj):
@@ -61,6 +63,9 @@ class EventSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         return obj.image.file.url
+
+    def get_review(self, obj):
+        return obj.get_review_display()
 
 
 class CategorySerializer(serializers.ModelSerializer):

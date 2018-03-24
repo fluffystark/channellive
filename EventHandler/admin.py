@@ -48,6 +48,7 @@ class EventAdmin(admin.ModelAdmin):
                        'start_date',
                        'end_date',
                        'location',
+                       'review',
                        'pub_date',
                        'check_status',
                        'first_prize',
