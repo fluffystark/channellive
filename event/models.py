@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
 
-from FileUpload.models import EventImage
+from file_upload.models import Image
 from user_profile.models import Business
 
 REVIEW_CHOICES = {
@@ -34,8 +34,7 @@ class Event(models.Model):
                                  default=1)
     business = models.ForeignKey(Business,
                                  related_name='events')
-    image = models.OneToOneField(EventImage,
-                                 on_delete=models.CASCADE,
+    image = models.OneToOneField(Image,
                                  blank=True,
                                  related_name='event',
                                  null=True)

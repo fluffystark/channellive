@@ -25,7 +25,6 @@ class LivestreamViewSet(viewsets.ModelViewSet):
         event = self.request.query_params.get('event_id', None)
         queryset = Livestream.objects.filter(event=event)
         isLive = self.request.query_params.get('is_live', None)
-        print type(isLive)
         if isLive == u'true':
             queryset = queryset.filter(is_live=True)
         else:
@@ -56,12 +55,9 @@ class SubscriberViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None):
         livestreamer = self.get_object()
         user_id = self.request.query_params.get('user_id', None)
-        viewer = None
-        if Viewer.objects.filter(livestream=livestreamer.id,
-                                 user_id=user_id).exists():
-            viewer = Viewer.objects.get(livestream=livestreamer.id,
-                                        user_id=user_id)
-        else:
+        viewer = Viewer.objects.filter(livestream=livestreamer.id,
+                                       user_id=user_id).first()
+        if viewer is None:
             viewer = Viewer(livestream=livestreamer,
                             user_id=user_id)
             viewer.save()

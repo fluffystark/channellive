@@ -21,7 +21,6 @@ from rest_framework.routers import DefaultRouter
 from channellive import settings
 
 from event.urls import router as eventRouter
-from FileUpload.urls import router as fileuploadRouter
 from PrizeHandler.urls import router as prizeRouter
 from OpenTokHandler.urls import router as tokRouter
 from user_profile.urls import router as userRouter
@@ -29,7 +28,6 @@ from user_profile.urls import router as userRouter
 
 router = DefaultRouter()
 router.registry.extend(eventRouter.registry)
-router.registry.extend(fileuploadRouter.registry)
 router.registry.extend(prizeRouter.registry)
 router.registry.extend(userRouter.registry)
 router.registry.extend(tokRouter.registry)

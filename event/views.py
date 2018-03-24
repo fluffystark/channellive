@@ -3,15 +3,17 @@ from __future__ import unicode_literals
 
 import datetime
 import pytz
-from django.conf import settings
 from django.utils import timezone
 from rest_framework import viewsets
+from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from event.models import Event
 from event.models import Category
+from file_upload.models import Image
 from user_profile.models import Business
 from event.serializers import EventSerializer
 from event.serializers import CategorySerializer
+from file_upload.serializers import FileSerializer
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -22,8 +24,8 @@ class EventViewSet(viewsets.ModelViewSet):
         status = self.request.query_params.get('status', None)
         pk = self.request.query_params.get('business_id', None)
         review = self.request.query_params.get('review', None)
-        if Business.objects.filter(pk=pk).exists():
-            business = Business.objects.get(pk=pk)
+        business = Business.objects.filter(pk=pk).first()
+        if business is not None:
             queryset = queryset.filter(business=business)
 
         if status == 'incoming':
@@ -93,6 +95,22 @@ class HasEventViewSet(viewsets.ViewSet):
         if business is not None and business.events.all().count() > 0:
             has_event = True
         return Response(has_event)
+
+
+class FileUploadViewSet(viewsets.ViewSet):
+    parser_class = (FileUploadParser)
+    serializer_class = FileSerializer
+
+    def create(self, request):
+        obj = request.data
+        content = "Event Created"
+        event = Event.objects.filter(pk=obj['event_id']).first()
+        if event is not None:
+            new_img = Image(file=obj['file'])
+            new_img.save()
+            event.image = new_img
+            event.save()
+        return Response(content)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

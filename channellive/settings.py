@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'event',
-    'FileUpload',
+    'file_upload',
     'PrizeHandler',
     'user_profile',
     'OpenTokHandler',

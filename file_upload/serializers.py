@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from FileUpload.models import EventImage
+from file_upload.models import Image
 
 
 class FileSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = EventImage
+        model = Image
         fields = ('file',
                   'event')

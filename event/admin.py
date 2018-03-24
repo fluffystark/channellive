@@ -6,11 +6,11 @@ from django.contrib.contenttypes.admin import GenericTabularInline
 
 from event.models import Event, Category
 from PrizeHandler.models import Prize
-from FileUpload.models import EventImage
+from file_upload.models import Image
 
 
 class ImageInline(admin.TabularInline):
-    model = EventImage
+    model = Image
     extra = 1
 
 
@@ -66,8 +66,9 @@ class EventAdmin(admin.ModelAdmin):
         CategoryInline,
         ImageInline,
     ]
-
+    # list_filter = ['check_status']
 
 admin.site.register(Event, EventAdmin)
 admin.site.register(Category)
 admin.site.register(Prize)
+admin.site.register(Image)
