@@ -2,6 +2,7 @@ from dateutil.parser import parse
 from rest_framework import serializers
 from event.models import Event
 from event.models import Category
+from event.models import Prize
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -82,3 +83,24 @@ class CategorySerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.text
+
+
+class PrizeSerializer(serializers.ModelSerializer):
+    event_id = serializers.SerializerMethodField()
+    user_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Prize
+        fields = ('event_id',
+                  'user_id',
+                  'title',
+                  'amount',)
+
+    def get_user_id(self, obj):
+        user = -1
+        if obj.user is not None:
+            user = obj.user.pk
+        return user
+
+    def get_event_id(self, obj):
+        return obj.event.pk

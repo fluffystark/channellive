@@ -5,4 +5,7 @@ from django.apps import AppConfig
 
 
 class EventhandlerConfig(AppConfig):
-    name = 'EventHandler'
+    name = 'event'
+
+    def ready(self):
+        import event.signals

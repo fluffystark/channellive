@@ -21,14 +21,12 @@ from rest_framework.routers import DefaultRouter
 from channellive import settings
 
 from event.urls import router as eventRouter
-from PrizeHandler.urls import router as prizeRouter
 from OpenTokHandler.urls import router as tokRouter
 from user_profile.urls import router as userRouter
 # separate url to their own apps
 
 router = DefaultRouter()
 router.registry.extend(eventRouter.registry)
-router.registry.extend(prizeRouter.registry)
 router.registry.extend(userRouter.registry)
 router.registry.extend(tokRouter.registry)
 

@@ -9,10 +9,12 @@ from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from event.models import Event
 from event.models import Category
+from event.models import Prize
 from file_upload.models import Image
 from user_profile.models import Business
 from event.serializers import EventSerializer
 from event.serializers import CategorySerializer
+from event.serializers import PrizeSerializer
 from file_upload.serializers import FileSerializer
 
 
@@ -116,6 +118,12 @@ class FileUploadViewSet(viewsets.ViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+
+class PrizeViewSet(viewsets.ModelViewSet):
+    queryset = Prize.objects.all()
+    serializer_class = PrizeSerializer
+
 
 # make fixtures
 # check loaddata
