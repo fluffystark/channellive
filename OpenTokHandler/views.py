@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 from rest_framework import viewsets
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from OpenTokHandler.models import Livestream
 from OpenTokHandler.models import Viewer
@@ -22,12 +23,14 @@ class LivestreamViewSet(viewsets.ModelViewSet):
     serializer_class = LivestreamSerializer
 
     def get_queryset(self):
+        queryset = Livestream.objects.all()
         event = self.request.query_params.get('event_id', None)
-        queryset = Livestream.objects.filter(event=event)
+        if event is not None:
+            queryset = Livestream.objects.filter(event=event)
         isLive = self.request.query_params.get('is_live', None)
         if isLive == u'true':
             queryset = queryset.filter(is_live=True)
-        else:
+        elif isLive == u'false':
             queryset = queryset.filter(is_live=False)
         return queryset
 
@@ -45,6 +48,29 @@ class LivestreamViewSet(viewsets.ModelViewSet):
                    'TOKEN_PUBLISHER': token,
                    'API_KEY': APIKey,
                    'livestreamId': livestreamer.id}
+        return Response(content)
+
+    @detail_route(methods=['get'])
+    def end(self, request, pk=None):
+        livestreamer = self.get_object()
+        livestreamer.is_live = False
+        livestreamer.save()
+        content = "End"
+        return Response(content)
+
+    @detail_route(methods=['get'])
+    def status(self, request, pk=None):
+        livestreamer = self.get_object()
+        content = "Success"
+        if livestreamer.archive == "":
+            archive = opentok.start_archive(livestreamer.session,
+                                            name=u'ChannelLive')
+            livestreamer.archive = archive.id
+            livestreamer.is_live = True
+            livestreamer.save()
+        else:
+            livestreamer.is_live = not livestreamer.is_live
+            livestreamer.save()
         return Response(content)
 
 
@@ -80,35 +106,4 @@ class VoteViewSet(viewsets.ModelViewSet):
         viewer.vote = not viewer.vote
         viewer.save()
         content = viewer.vote
-        return Response(content)
-
-
-class EndStreamViewSet(viewsets.ModelViewSet):
-    serializer_class = LivestreamSerializer
-    queryset = Livestream.objects.all()
-
-    def retrieve(self, request, pk=None):
-        livestreamer = self.get_object()
-        livestreamer.is_live = False
-        livestreamer.save()
-        content = "End"
-        return Response(content)
-
-
-class ArchiveViewSet(viewsets.ModelViewSet):
-    serializer_class = LivestreamSerializer
-    queryset = Livestream.objects.all()
-
-    def retrieve(self, request, pk=None):
-        livestreamer = self.get_object()
-        content = {}
-        if livestreamer.archive == "":
-            archive = opentok.start_archive(livestreamer.session,
-                                            name=u'ChannelLive')
-            livestreamer.archive = archive.id
-            livestreamer.is_live = True
-            livestreamer.save()
-        else:
-            livestreamer.is_live = not livestreamer.is_live
-            livestreamer.save()
         return Response(content)
