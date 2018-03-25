@@ -12,3 +12,4 @@ class Notification(models.Model):
     user = models.ForeignKey(User,
                              related_name='notifications')
     unread = models.BooleanField(default=True)
+    timestamp = models.DateTimeField(auto_now_add=True)

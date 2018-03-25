@@ -9,7 +9,6 @@ class EventSerializer(serializers.ModelSerializer):
     event_id = serializers.SerializerMethodField('get_id')
     business_id = serializers.SerializerMethodField('get_business')
     category_id = serializers.SerializerMethodField('get_category')
-    status = serializers.SerializerMethodField()
     start_date = serializers.SerializerMethodField()
     end_date = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
@@ -38,9 +37,6 @@ class EventSerializer(serializers.ModelSerializer):
 
     def get_category(self, obj):
         return obj.category.pk
-
-    def get_status(self, obj):
-        return obj.self_status()
 
     def get_start_date(self, obj):
         ret = parse(str(obj.start_date))
@@ -87,19 +83,19 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class PrizeSerializer(serializers.ModelSerializer):
     event_id = serializers.SerializerMethodField()
-    user_id = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
 
     class Meta:
         model = Prize
         fields = ('event_id',
-                  'user_id',
+                  'username',
                   'title',
                   'amount',)
 
-    def get_user_id(self, obj):
+    def get_username(self, obj):
         user = -1
         if obj.user is not None:
-            user = obj.user.pk
+            user = obj.user.username
         return user
 
     def get_event_id(self, obj):

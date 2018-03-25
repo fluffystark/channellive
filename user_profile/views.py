@@ -5,15 +5,32 @@ from django.contrib.auth.models import User
 
 from rest_framework import viewsets
 from rest_framework import status
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
+from notification.models import Notification
 from user_profile.models import Business
+from notification.serializers import NotificationSerializer
 from user_profile.serializers import BusinessSerializer
 from user_profile.serializers import UserRegistrationSerializer
 
 
-class BusinessViewSet(viewsets.ModelViewSet):
-    queryset = Business.objects.all()
+class BusinessViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = BusinessSerializer
+    queryset = Business.objects.all()
+
+    @detail_route(methods=['get'])
+    def count_notifications(self, request, pk=None):
+        business = self.get_object()
+        count = Notification.objects.filter(user=business.user,
+                                            unread=True).count()
+        return Response(count)
+
+    @detail_route(methods=['get'])
+    def notifications(self, request, pk=None):
+        business = self.get_object()
+        queryset = Notification.objects.filter(user=business.user)
+        serializer = NotificationSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class UserRegistrationViewSet(viewsets.ViewSet):

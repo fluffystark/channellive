@@ -3,15 +3,20 @@ from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
 
 from file_upload.models import Image
 from user_profile.models import Business
 
 REVIEW_CHOICES = {
-    (1, ("Pending")),
-    (2, ("Approved")),
-    (3, ("Rejected"))
+    (1, "Pending"),
+    (2, "Approved"),
+    (3, "Rejected")
+}
+
+STATUS_CHOICES = {
+    (1, "INCOMING"),
+    (2, "ONGOING"),
+    (3, "ENDED")
 }
 
 
@@ -24,9 +29,9 @@ class Category(models.Model):
 
 class Event(models.Model):
 
-    PENDING = 1
-    APPROVED = 2
-    REJECTED = 3
+    INCOMING = PENDING = 1
+    ONGOING = APPROVED = 2
+    ENDED = REJECTED = 3
 
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=240)
@@ -45,21 +50,10 @@ class Event(models.Model):
     end_date = models.DateTimeField()
     location = models.CharField(max_length=50, default="Cebu")
     review = models.SmallIntegerField(choices=REVIEW_CHOICES, default=PENDING)
+    status = models.SmallIntegerField(choices=STATUS_CHOICES, default=INCOMING)
 
     def __str__(self):
         return self.name
-
-    def self_status(self):
-        now = timezone.localtime(timezone.now())
-        status = 'NONE'
-        if self.start_date is not None:
-            if now < self.start_date:
-                status = 'INCOMING'
-            elif self.start_date < now < self.end_date:
-                status = 'ONGOING'
-            elif now >= self.end_date:
-                status = 'ENDED'
-        return status
 
     def __unicode__(self):
         return self.name

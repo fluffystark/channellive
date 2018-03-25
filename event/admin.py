@@ -26,9 +26,6 @@ class EventInline(GenericTabularInline):
 
 class EventAdmin(admin.ModelAdmin):
 
-    def check_status(self, obj):
-        return obj.self_status()
-
     def first_prize(self, obj):
         return obj.prizes.filter(title="First Prize").user
 
@@ -51,14 +48,13 @@ class EventAdmin(admin.ModelAdmin):
                        'location',
                        'review',
                        'pub_date',
-                       'check_status',
+                       'status',
                        'first_prize',
                        'second_prize',
                        'third_prize',)
         }),
     ]
     readonly_fields = ('pub_date',
-                       'check_status',
                        'first_prize',
                        'second_prize',
                        'third_prize',)
@@ -66,7 +62,7 @@ class EventAdmin(admin.ModelAdmin):
         CategoryInline,
         ImageInline,
     ]
-    # list_filter = ['check_status']
+    list_filter = ['status']
 
 
 admin.site.register(Event, EventAdmin)

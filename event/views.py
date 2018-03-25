@@ -5,6 +5,7 @@ import datetime
 import pytz
 from django.utils import timezone
 from rest_framework import viewsets
+from rest_framework.decorators import detail_route
 from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from event.models import Event
@@ -31,12 +32,11 @@ class EventViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(business=business)
 
         if status == 'incoming':
-            queryset = queryset.filter(start_date__gt=timezone.now())
+            queryset = queryset.filter(status=Event.INCOMING)
         elif status == 'ongoing':
-            queryset = queryset.filter(start_date__lt=timezone.now(),
-                                       end_date__gt=timezone.now())
+            queryset = queryset.filter(status=Event.ONGOING)
         elif status == 'ended':
-            queryset = queryset.filter(end_date__lt=timezone.now())
+            queryset = queryset.filter(status=Event.ENDED)
 
         if review == 'pending':
             queryset = queryset.filter(review=Event.PENDING)
@@ -87,6 +87,13 @@ class EventViewSet(viewsets.ModelViewSet):
             content = -1
         return Response(content)
 
+    @detail_route(methods=['get'])
+    def prizes(self, request, pk=None):
+        event = self.get_object()
+        prizes = Prize.objects.filter(event=event)
+        serializer = PrizeSerializer(prizes, many=True)
+        return Response(serializer.data)
+
 
 class HasEventViewSet(viewsets.ViewSet):
 
@@ -127,5 +134,4 @@ class PrizeViewSet(viewsets.ModelViewSet):
 # make fixtures
 # check loaddata
 # dumpdata
-# celery oh no
 # fix timezone
