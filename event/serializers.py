@@ -3,6 +3,7 @@ from rest_framework import serializers
 from event.models import Event
 from event.models import Category
 from event.models import Prize
+from OpenTokHandler.models import Livestream
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -84,13 +85,15 @@ class CategorySerializer(serializers.ModelSerializer):
 class PrizeSerializer(serializers.ModelSerializer):
     event_id = serializers.SerializerMethodField()
     username = serializers.SerializerMethodField()
+    livestream_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Prize
         fields = ('event_id',
                   'username',
                   'title',
-                  'amount',)
+                  'amount',
+                  'livestream_id')
 
     def get_username(self, obj):
         user = -1
@@ -100,3 +103,10 @@ class PrizeSerializer(serializers.ModelSerializer):
 
     def get_event_id(self, obj):
         return obj.event.pk
+
+    def get_livestream_id(self, obj):
+        livestream = Livestream.objects.filter(event=obj.event,
+                                               user=obj.user).first()
+        if livestream is not None:
+            return livestream.id
+        return -1

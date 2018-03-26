@@ -6,5 +6,4 @@ class FileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Image
-        fields = ('file',
-                  'event')
+        fields = ('file',)

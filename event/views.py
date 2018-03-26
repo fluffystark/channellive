@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 import datetime
-import pytz
+from dateutil import tz
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
@@ -58,19 +58,20 @@ class EventViewSet(viewsets.ModelViewSet):
         start_date = data['start_date']
         end_date = data['end_date']
         content = None
+        new_tz = tz.gettz(data['time_zone'])
         parsed_start_date = datetime.datetime(start_date['year'],
                                               start_date['month'] + 1,
                                               start_date['dayOfMonth'],
                                               start_date['hourOfDay'],
                                               start_date['minute'],
-                                              tzinfo=pytz.UTC
+                                              tzinfo=new_tz
                                               )
         parsed_end_date = datetime.datetime(end_date['year'],
                                             end_date['month'] + 1,
                                             end_date['dayOfMonth'],
                                             end_date['hourOfDay'],
                                             end_date['minute'],
-                                            tzinfo=pytz.UTC
+                                            tzinfo=new_tz
                                             )
         if now <= parsed_start_date < parsed_end_date:
             new_event = Event(category_id=data['category_id'],
@@ -105,19 +106,42 @@ class HasEventViewSet(viewsets.ViewSet):
         return Response(has_event)
 
 
-class FileUploadViewSet(viewsets.ViewSet):
+class EventImageViewSet(viewsets.ViewSet):
     parser_class = (FileUploadParser)
     serializer_class = FileSerializer
 
     def create(self, request):
         obj = request.data
-        content = "Event Created"
+        content = {"statusCode": 409,
+                   "message": "Problem with Image Upload",
+                   "statusType": "conflict",
+                   }
         event = Event.objects.filter(pk=obj['event_id']).first()
         if event is not None:
             new_img = Image(file=obj['file'])
             new_img.save()
             event.image = new_img
             event.save()
+            content = {"statusCode": 200,
+                       "message": "Image Uploaded",
+                       "statusType": "success",
+                       }
+        return Response(content)
+
+
+class ImageViewSet(viewsets.ViewSet):
+    parser_class = (FileUploadParser)
+    serializer_class = FileSerializer
+
+    def create(self, request):
+        obj = request.data
+        new_img = Image(file=obj['file'])
+
+        new_img.save()
+        content = {"statusCode": 200,
+                   "message": "Image Uploaded",
+                   "statusType": "success",
+                   }
         return Response(content)
 
 
@@ -129,7 +153,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class PrizeViewSet(viewsets.ModelViewSet):
     queryset = Prize.objects.all()
     serializer_class = PrizeSerializer
-
 
 # make fixtures
 # check loaddata

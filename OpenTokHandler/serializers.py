@@ -1,6 +1,14 @@
+from django.conf import settings
 from rest_framework import serializers
 from OpenTokHandler.models import Livestream
 from OpenTokHandler.models import Viewer
+from OpenTokHandler.models import Archive
+
+from opentok import OpenTok
+
+APIKey = settings.TOK_APIKEY
+secretkey = settings.TOK_SECRETKEY
+opentok = OpenTok(APIKey, secretkey)
 
 
 class LivestreamSerializer(serializers.ModelSerializer):
@@ -8,7 +16,6 @@ class LivestreamSerializer(serializers.ModelSerializer):
     user_id = serializers.SerializerMethodField('get_user')
     event_id = serializers.SerializerMethodField('get_event')
     username = serializers.SerializerMethodField()
-    votes = serializers.SerializerMethodField()
     views = serializers.SerializerMethodField()
 
     class Meta:
@@ -38,9 +45,6 @@ class LivestreamSerializer(serializers.ModelSerializer):
     def get_views(self, obj):
         return Viewer.objects.filter(livestream=obj.pk).count()
 
-    def get_votes(self, obj):
-        return Viewer.objects.filter(livestream=obj.pk, vote=True).count()
-
 
 class ViewerSerializer(serializers.ModelSerializer):
     user_id = serializers.SerializerMethodField('get_user')
@@ -54,3 +58,11 @@ class ViewerSerializer(serializers.ModelSerializer):
 
     def get_user(self, obj):
         return obj.user.pk
+
+
+class ArchiveSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Archive
+        fields = ('timestamp',
+                  'video')

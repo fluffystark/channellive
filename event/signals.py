@@ -35,3 +35,15 @@ def approved_notif(sender, instance, created, **kwargs):
                                  user=event.business.user,
                                  )
             notif.save()
+
+
+@receiver(post_save, sender=Prize)
+def prize_notif(sender, instance, created, **kwargs):
+    if created is False:
+        prize = instance
+        if prize.user is not None:
+            message = "Congratulations " + prize.user.username + " you won " + prize.title + " in the event " + prize.event.name
+            notif = Notification(message=message,
+                                 user=prize.user,
+                                 )
+            notif.save()

@@ -40,27 +40,33 @@ class UserRegistrationViewSet(viewsets.ViewSet):
     def create(self, request):
         data = request.data
         user_serializer = UserRegistrationSerializer(data=data)
-        content = {}
+        content = {"statusCode": 409,
+                   "message": None,
+                   "statusType": "conflict",
+                   "attribute": None
+                   }
         if user_serializer.is_valid():
             new_user = user_serializer.save()
             business_id = -1
-            if data['is_business'] == u'true':
+            if data['is_business'] is True:
                 new_business = Business(user=new_user,
                                         company_name=data['business_name'])
                 new_business.save()
                 business_id = new_business.id
+            auth = {'user_id': new_user.id,
+                    'username': new_user.username,
+                    'business_id': business_id, }
             content = {
                 "statusCode": "201",
-                "user_id": new_user.id,
-                "username": new_user.username,
-                "business_id": business_id,
+                "attribute": auth,
+                "statusType": "success",
                 "message": "Account Successfully Created",
             }
             return Response(content, status.HTTP_201_CREATED)
         if 'username' in user_serializer.errors:
-            content = "Username already exist"
+            content["message"] = "Username already exist"
         elif 'email' in user_serializer.errors:
-            content = "Email already exist"
+            content["message"] = "Email already exist"
         return Response(content, status.HTTP_409_CONFLICT)
 
 
