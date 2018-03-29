@@ -6,17 +6,16 @@ from dateutil import tz
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
+from rest_framework.decorators import parser_classes
 from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from event.models import Event
 from event.models import Category
 from event.models import Prize
-from file_upload.models import Image
 from user_profile.models import Business
 from event.serializers import EventSerializer
 from event.serializers import CategorySerializer
 from event.serializers import PrizeSerializer
-from file_upload.serializers import FileSerializer
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -24,12 +23,21 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Event.objects.all()
+
         status = self.request.query_params.get('status', None)
         pk = self.request.query_params.get('business_id', None)
         review = self.request.query_params.get('review', None)
+        category_id = self.request.query_params.get('category', None)
+        name = self.request.query_params.get('name', None)
+
         business = Business.objects.filter(pk=pk).first()
         if business is not None:
             queryset = queryset.filter(business=business)
+        category = Category.objects.filter(pk=category_id).first()
+        if category is not None:
+            queryset = queryset.filter(category=category)
+        if name is not None:
+            queryset = queryset.filter(name__contains=name)
 
         if status == 'incoming':
             queryset = queryset.filter(status=Event.INCOMING)
@@ -95,6 +103,25 @@ class EventViewSet(viewsets.ModelViewSet):
         serializer = PrizeSerializer(prizes, many=True)
         return Response(serializer.data)
 
+    @detail_route(methods=['post'])
+    @parser_classes((FileUploadParser,))
+    def image(self, request, pk=None):
+        event = self.get_object()
+        if 'file' in request.data:
+            file = request.data['file']
+            event.image = file
+            event.save()
+            content = {"statusCode": 200,
+                       "message": "Image Uploaded",
+                       "statusType": "success",
+                       }
+        else:
+            content = {"statusCode": 409,
+                       "message": "Problem with Image Upload",
+                       "statusType": "conflict",
+                       }
+        return Response(content)
+
 
 class HasEventViewSet(viewsets.ViewSet):
 
@@ -104,45 +131,6 @@ class HasEventViewSet(viewsets.ViewSet):
         if business is not None and business.events.all().count() > 0:
             has_event = True
         return Response(has_event)
-
-
-class EventImageViewSet(viewsets.ViewSet):
-    parser_class = (FileUploadParser)
-    serializer_class = FileSerializer
-
-    def create(self, request):
-        obj = request.data
-        content = {"statusCode": 409,
-                   "message": "Problem with Image Upload",
-                   "statusType": "conflict",
-                   }
-        event = Event.objects.filter(pk=obj['event_id']).first()
-        if event is not None:
-            new_img = Image(file=obj['file'])
-            new_img.save()
-            event.image = new_img
-            event.save()
-            content = {"statusCode": 200,
-                       "message": "Image Uploaded",
-                       "statusType": "success",
-                       }
-        return Response(content)
-
-
-class ImageViewSet(viewsets.ViewSet):
-    parser_class = (FileUploadParser)
-    serializer_class = FileSerializer
-
-    def create(self, request):
-        obj = request.data
-        new_img = Image(file=obj['file'])
-
-        new_img.save()
-        content = {"statusCode": 200,
-                   "message": "Image Uploaded",
-                   "statusType": "success",
-                   }
-        return Response(content)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -157,4 +145,3 @@ class PrizeViewSet(viewsets.ModelViewSet):
 # make fixtures
 # check loaddata
 # dumpdata
-# fix timezone

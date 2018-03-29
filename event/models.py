@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.db import models
 
-from file_upload.models import Image
 from user_profile.models import Business
 
 REVIEW_CHOICES = {
@@ -40,10 +39,9 @@ class Event(models.Model):
                                  default=1)
     business = models.ForeignKey(Business,
                                  related_name='events')
-    image = models.OneToOneField(Image,
-                                 blank=True,
-                                 related_name='event',
-                                 null=True)
+    image = models.ImageField(upload_to='event_pic',
+                              blank=True,
+                              null=True)
     budget = models.FloatField(default=100)
     pub_date = models.DateTimeField(auto_now_add=True)
     start_date = models.DateTimeField()

@@ -2,12 +2,16 @@
 from __future__ import unicode_literals
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
+from rest_framework.decorators import parser_classes
 from rest_framework.response import Response
+from rest_framework.parsers import FileUploadParser
 from OpenTokHandler.models import Livestream
 from OpenTokHandler.models import Viewer
 from OpenTokHandler.models import Archive
+from OpenTokHandler.models import Report
 from OpenTokHandler.serializers import LivestreamSerializer
 from OpenTokHandler.serializers import ViewerSerializer
 from OpenTokHandler.serializers import ArchiveSerializer
@@ -43,7 +47,6 @@ class LivestreamViewSet(viewsets.ModelViewSet):
         token = opentok.generate_token(session_id, Roles.publisher)
         livestream = Livestream.objects.filter(user_id=data['user_id'],
                                                event_id=data['event_id']).first()
-        print livestream
         if livestream is None:
             livestream = Livestream(user_id=data['user_id'],
                                     event_id=data['event_id'],
@@ -87,10 +90,10 @@ class LivestreamViewSet(viewsets.ModelViewSet):
                                   archive=archive.id)
             livestreamer.is_live = True
             new_archive.save()
-            livestreamer.save()
+            livestreamer.save(update_fields=['archive', 'is_live'])
         else:
             livestreamer.is_live = not livestreamer.is_live
-            livestreamer.save()
+            livestreamer.save(update_fields=['is_live'])
         return Response(content)
 
     @detail_route(methods=['get'])
@@ -107,13 +110,31 @@ class LivestreamViewSet(viewsets.ModelViewSet):
         serializer = ArchiveSerializer(archives, many=True)
         return Response(serializer.data)
 
+    @detail_route(methods=['post'])
+    @parser_classes((FileUploadParser,))
+    def thumbnail(self, request, pk=None):
+        livestream = self.get_object()
+        if 'file' in request.data:
+            file = request.data['file']
+            livestream.thumbnail = file
+            livestream.save(update_fields=['thumbnail'])
+            archive = Archive.objects.filter(livestream=livestream).latest('timestamp')
+            if archive.thumbnail.name == "":
+                archive.thumbnail = file
+                archive.save(update_fields=['thumbnail'])
+        content = {"statusCode": 200,
+                   "message": "Image Uploaded",
+                   "statusType": "success",
+                   }
+        return Response(content)
+
 
 class SubscriberViewSet(viewsets.ModelViewSet):
-    serializer_class = LivestreamSerializer
-    queryset = Livestream.objects.all()
+    serializer_class = ViewerSerializer
+    queryset = Viewer.objects.all()
 
     def retrieve(self, request, pk=None):
-        livestreamer = self.get_object()
+        livestreamer = Livestream.objects.filter(pk=pk).first()
         user_id = self.request.query_params.get('user_id', None)
         viewer = Viewer.objects.filter(livestream=livestreamer.id,
                                        user_id=user_id).first()
@@ -130,19 +151,32 @@ class SubscriberViewSet(viewsets.ModelViewSet):
                    'viewer_vote': viewer.vote}
         return Response(content)
 
-
-class VoteViewSet(viewsets.ModelViewSet):
-    serializer_class = ViewerSerializer
-    queryset = Viewer.objects.all()
-
-    def retrieve(self, request, pk=None):
+    @detail_route(methods=['get'])
+    def vote(self, request, pk=None):
         viewer = self.get_object()
         viewer.vote = not viewer.vote
+        viewer.livestream.votes += 1 if viewer.vote is True else -1
         viewer.save()
         content = viewer.vote
         return Response(content)
 
-
-class ArchiveViewSet(viewsets.ModelViewSet):
-    serializer_class = ArchiveSerializer
-    queryset = Archive.objects.all()
+    @detail_route(methods=['get'])
+    def report(self, request, pk=None):
+        user = Livestream.objects.filter(pk=pk).first().user
+        livestream = self.request.query_params.get('livestream', None)
+        content = {"statusCode": 200,
+                   "message": "Report Unsuccessful",
+                   "statusType": "conflict",
+                   }
+        if user is not None:
+            sentby = User.objects.filter(pk=pk).first()
+            message = "REPORT: Bad Livestream Content"
+            report = Report(sentby=sentby,
+                            livestream_id=livestream,
+                            message=message)
+            report.save()
+            content = {"statusCode": 200,
+                       "message": "Report Made",
+                       "statusType": "success",
+                       }
+        return Response(content)

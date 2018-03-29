@@ -6,12 +6,6 @@ from django.contrib.contenttypes.admin import GenericTabularInline
 
 from event.models import Event, Category
 from event.models import Prize
-from file_upload.models import Image
-
-
-class ImageInline(admin.TabularInline):
-    model = Image
-    extra = 1
 
 
 class CategoryInline(admin.TabularInline):
@@ -60,12 +54,33 @@ class EventAdmin(admin.ModelAdmin):
                        'third_prize',)
     inline = [
         CategoryInline,
-        ImageInline,
     ]
+    list_display = ('name', 'status', 'review')
     list_filter = ['status']
+
+
+class PrizeAdmin(admin.ModelAdmin):
+
+    fieldsets = [
+        (None, {
+            'fields': ('title',
+                       'amount',
+                       'event',
+                       'user',)
+        }),
+    ]
+    list_display = ('event', 'title', 'has_user',)
+    list_filter = ('event',)
+
+    def has_user(self, obj):
+        retval = False
+        if obj.user is not None:
+            retval = True
+        return retval
+
+    has_user.boolean = True
 
 
 admin.site.register(Event, EventAdmin)
 admin.site.register(Category)
-admin.site.register(Prize)
-admin.site.register(Image)
+admin.site.register(Prize, PrizeAdmin)

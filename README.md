@@ -6,6 +6,7 @@
         - Creates an Event
         - Checks if Business has created an event
         - Displays the Categories available
+        - Prize Handler
  
 ## 2. OpenTokHandler
 	Takes care of OpenTok (Livestream functionalities)
@@ -17,20 +18,9 @@
         - Archive a livestream
  
 ## 3. UserProfile
-	Holds the Users and Business
+	Holds the Users and Business functionality
+        - Registration
+        - Login
 
-## 4. UserRegistration
-    App responsible for registration
-        - User
-        - Business
-
-## 5. UserLogin
-    App is responsible for logging in
-        - User
-        - Business
-
-## 6. FileUpload
+## 4. FileUpload
     App is responsible for uploading files into their corresponding models
-
-## 7. PrizeHandler
-    App is used for organizing prizes and the users who won these prizes

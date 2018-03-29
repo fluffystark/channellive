@@ -60,7 +60,7 @@ class EventSerializer(serializers.ModelSerializer):
         return ret
 
     def get_image(self, obj):
-        return obj.image.file.url
+        return obj.image.url
 
     def get_review(self, obj):
         return obj.get_review_display()
@@ -83,26 +83,20 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class PrizeSerializer(serializers.ModelSerializer):
-    event_id = serializers.SerializerMethodField()
     username = serializers.SerializerMethodField()
     livestream_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Prize
-        fields = ('event_id',
-                  'username',
+        fields = ('username',
                   'title',
-                  'amount',
-                  'livestream_id')
+                  'livestream_id',)
 
     def get_username(self, obj):
         user = -1
         if obj.user is not None:
             user = obj.user.username
         return user
-
-    def get_event_id(self, obj):
-        return obj.event.pk
 
     def get_livestream_id(self, obj):
         livestream = Livestream.objects.filter(event=obj.event,

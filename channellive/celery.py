@@ -19,8 +19,12 @@ app.autodiscover_tasks()
 
 
 app.conf.beat_schedule = {
-    'send-report-every-single-minute': {
+    'update-status-every-single-minute': {
         'task': 'event.tasks.update_event_status',
         'schedule': crontab()
-    }
+    },
+    'update-video-every-single-minute': {
+        'task': 'OpenTokHandler.tasks.update_video_url',
+        'schedule': crontab()
+    },
 }

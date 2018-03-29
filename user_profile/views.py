@@ -12,25 +12,12 @@ from user_profile.models import Business
 from notification.serializers import NotificationSerializer
 from user_profile.serializers import BusinessSerializer
 from user_profile.serializers import UserRegistrationSerializer
+from user_profile.serializers import UserSerializer
 
 
 class BusinessViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = BusinessSerializer
     queryset = Business.objects.all()
-
-    @detail_route(methods=['get'])
-    def count_notifications(self, request, pk=None):
-        business = self.get_object()
-        count = Notification.objects.filter(user=business.user,
-                                            unread=True).count()
-        return Response(count)
-
-    @detail_route(methods=['get'])
-    def notifications(self, request, pk=None):
-        business = self.get_object()
-        queryset = Notification.objects.filter(user=business.user)
-        serializer = NotificationSerializer(queryset, many=True)
-        return Response(serializer.data)
 
 
 class UserRegistrationViewSet(viewsets.ViewSet):
@@ -86,3 +73,27 @@ class LoginViewSet(viewsets.ViewSet):
                    'username': obj.get_username(),
                    'business_id': business_id, }
         return Response(content, status=status.HTTP_200_OK)
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+
+    def retrieve(self, request, pk=None):
+        user = User.objects.get(pk=pk)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    @detail_route(methods=['get'])
+    def count_notifications(self, request, pk=None):
+        user = self.get_object()
+        count = Notification.objects.filter(user=user,
+                                            unread=True).count()
+        return Response(count)
+
+    @detail_route(methods=['get'])
+    def notifications(self, request, pk=None):
+        user = self.get_object()
+        queryset = Notification.objects.filter(user=user)
+        serializer = NotificationSerializer(queryset, many=True)
+        return Response(serializer.data)

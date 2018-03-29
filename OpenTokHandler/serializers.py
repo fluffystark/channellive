@@ -17,6 +17,7 @@ class LivestreamSerializer(serializers.ModelSerializer):
     event_id = serializers.SerializerMethodField('get_event')
     username = serializers.SerializerMethodField()
     views = serializers.SerializerMethodField()
+    thumbnail = serializers.SerializerMethodField()
 
     class Meta:
         model = Livestream
@@ -28,6 +29,7 @@ class LivestreamSerializer(serializers.ModelSerializer):
                   'username',
                   'session',
                   'votes',
+                  'thumbnail',
                   'views')
 
     def get_id(self, obj):
@@ -45,6 +47,9 @@ class LivestreamSerializer(serializers.ModelSerializer):
     def get_views(self, obj):
         return Viewer.objects.filter(livestream=obj.pk).count()
 
+    def get_thumbnail(self, obj):
+        return obj.thumbnail.url
+
 
 class ViewerSerializer(serializers.ModelSerializer):
     user_id = serializers.SerializerMethodField('get_user')
@@ -61,8 +66,13 @@ class ViewerSerializer(serializers.ModelSerializer):
 
 
 class ArchiveSerializer(serializers.ModelSerializer):
+    thumbnail = serializers.SerializerMethodField()
 
     class Meta:
         model = Archive
         fields = ('timestamp',
-                  'video')
+                  'video',
+                  'thumbnail')
+
+    def get_thumbnail(self, obj):
+        return obj.thumbnail.url

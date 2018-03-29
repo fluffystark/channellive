@@ -5,4 +5,7 @@ from django.apps import AppConfig
 
 
 class UserprofileConfig(AppConfig):
-    name = 'UserProfile'
+    name = 'user_profile'
+
+    def ready(self):
+        import user_profile.signals
