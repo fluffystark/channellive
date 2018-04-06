@@ -39,6 +39,7 @@ class EventAdmin(admin.ModelAdmin):
                        'budget',
                        'start_date',
                        'end_date',
+                       'verification_uuid',
                        'location',
                        'review',
                        'pub_date',
@@ -55,7 +56,7 @@ class EventAdmin(admin.ModelAdmin):
     inline = [
         CategoryInline,
     ]
-    list_display = ('name', 'status', 'review')
+    list_display = ('name', 'business', 'status', 'review')
     list_filter = ['status']
 
 

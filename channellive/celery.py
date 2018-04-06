@@ -27,4 +27,8 @@ app.conf.beat_schedule = {
         'task': 'OpenTokHandler.tasks.update_video_url',
         'schedule': crontab()
     },
+    'code-generator-every-hour': {
+        'task': 'user_profile.tasks.verification_code_generator',
+        'schedule': crontab(hour='*/1')
+    }
 }

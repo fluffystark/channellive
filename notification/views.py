@@ -6,5 +6,5 @@ from rest_framework.decorators import detail_route
 # Create your views here.
 
 
-# class NotificationViewSet(viewsets.ViewSet):
-
+class NotificationViewSet(viewsets.ViewSet):
+    queryset = Notification.objects.all()

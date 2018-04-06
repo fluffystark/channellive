@@ -21,4 +21,5 @@ def update_video_url():
     for archive in Archive.objects.filter(~Q(video=None)):
         archive.timestamp = now
         archive.video = opentok.get_archive(archive.archive).url
+        print archive.video
         archive.save(update_fields=['timestamp', 'video'])

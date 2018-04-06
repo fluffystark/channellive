@@ -3,8 +3,8 @@ from __future__ import absolute_import, unicode_literals
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
-from django.db.models import Q
 from django.utils import timezone
+from rest_framework.reverse import reverse
 from channellive.celery import app
 from event.models import Event
 from event.models import Prize
@@ -45,8 +45,13 @@ def send_event_approval_request(event_id):
     event = Event.objects.get(id=event_id)
     group = Group.objects.filter(name='Admin')
     for user in User.objects.filter(groups=group):
+        message = "EVENT FOR APPROVAL: \n\
+                   Name: %s \n\
+                   Description: %s \n\n\
+                   Click the link below to APPROVE the event request.\n\n\
+                   192.168.254.60:8000%s\n\n \
+                   - Channel Live Team -" % \
+                  (event.name, event.description,
+                   reverse('request', args=[str(event.verification_uuid)]))
         user.email_user(subject="Event for Approval",
-                        message="Log in and approve the event \n\n" +
-                                event.name + " \n\n http://192.168.254.60:8000" +
-                                "/admin/event/event/" + str(event.id) +
-                                "/change/\n\n" + "- Channel Live Team -",)
+                        message=message,)

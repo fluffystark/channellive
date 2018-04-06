@@ -104,3 +104,16 @@ class PrizeSerializer(serializers.ModelSerializer):
         if livestream is not None:
             return livestream.id
         return -1
+
+
+class EventDisplaySerializer(serializers.Serializer):
+
+    class Meta:
+        model = Event
+        fields = ('name',
+                  'description',
+                  'category',
+                  'budget',
+                  'start_date',
+                  'end_date',
+                  'verification_uuid')

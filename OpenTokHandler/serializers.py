@@ -3,6 +3,7 @@ from rest_framework import serializers
 from OpenTokHandler.models import Livestream
 from OpenTokHandler.models import Viewer
 from OpenTokHandler.models import Archive
+from OpenTokHandler.models import ReportType
 
 from opentok import OpenTok
 
@@ -76,3 +77,14 @@ class ArchiveSerializer(serializers.ModelSerializer):
 
     def get_thumbnail(self, obj):
         return obj.thumbnail.url
+
+
+class ReportTypeSerializer(serializers.ModelSerializer):
+    reporttype_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ReportType
+        fields = ('reporttype_id', 'text',)
+
+    def get_reporttype_id(self, obj):
+        return obj.pk

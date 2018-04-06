@@ -1,0 +1,25 @@
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+
+{% load staticfiles %}
+
+<html><body>
+<h1>{{ event.name }}</h1>
+<h3>{{ event.description }}</h3>
+<h3>{{ event.category.text }}</h3>
+<h3>{{ event.budget }}</h3>
+<h3>{{ event.start_date }}</h3>
+<h3>{{ event.end_date }}</h3>
+
+{% if not request.data %}
+<form action="{% url 'request-approve' pk=event.verification_uuid %}" method="POST">
+    {% csrf_token %}
+    <input name="Approval_val" type="submit" value="Approve">
+    <input name="Approval_val" type="submit" value="Reject">
+</form>
+
+{% endif %}
+{% if request.data %}
+<h1>{{ status }}</h1>
+{% endif %}
+</body></html>

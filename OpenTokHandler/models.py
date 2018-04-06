@@ -86,6 +86,13 @@ class Archive(models.Model):
                 super(Archive, self).save(*args, **kwargs)
 
 
+class ReportType(models.Model):
+    text = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.text
+
+
 class Report(models.Model):
 
     PENDING = 1
@@ -96,5 +103,7 @@ class Report(models.Model):
     livestream = models.ForeignKey(Livestream,
                                    related_name='reports',
                                    null=True)
-    message = models.CharField(max_length=200)
+    report_type = models.ForeignKey(ReportType,
+                                    related_name='reports',
+                                    default=1)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=PENDING)

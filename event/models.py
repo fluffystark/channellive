@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import uuid
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -49,6 +50,7 @@ class Event(models.Model):
     location = models.CharField(max_length=50, default="Cebu")
     review = models.SmallIntegerField(choices=REVIEW_CHOICES, default=PENDING)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=INCOMING)
+    verification_uuid = models.UUIDField('Unique Verification UUID', default=uuid.uuid4)
 
     def __str__(self):
         return self.name
@@ -67,5 +69,3 @@ class Prize(models.Model):
 
     def __str__(self):
         return self.event.name + "_" + self.title
-
-# modelmanager

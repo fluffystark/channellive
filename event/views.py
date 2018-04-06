@@ -3,11 +3,13 @@ from __future__ import unicode_literals
 
 import datetime
 from dateutil import tz
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.decorators import parser_classes
 from rest_framework.parsers import FileUploadParser
+from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from event.models import Event
 from event.models import Category
@@ -16,6 +18,7 @@ from user_profile.models import Business
 from event.serializers import EventSerializer
 from event.serializers import CategorySerializer
 from event.serializers import PrizeSerializer
+from event.serializers import EventDisplaySerializer
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -23,22 +26,21 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Event.objects.all()
-
-        status = self.request.query_params.get('status', None)
-        pk = self.request.query_params.get('business_id', None)
-        review = self.request.query_params.get('review', None)
         category_id = self.request.query_params.get('category', None)
         name = self.request.query_params.get('name', None)
-
+        pk = self.request.query_params.get('business_id', None)
+        status = self.request.query_params.get('status', None)
+        review = self.request.query_params.get('review', None)
+        start_date = self.request.query_params.get('startDate', None)
+        end_date = self.request.query_params.get('endDate', None)
         business = Business.objects.filter(pk=pk).first()
         if business is not None:
             queryset = queryset.filter(business=business)
         category = Category.objects.filter(pk=category_id).first()
-        if category is not None:
+        if category != -1 and category is not None:
             queryset = queryset.filter(category=category)
         if name is not None:
             queryset = queryset.filter(name__contains=name)
-
         if status == 'incoming':
             queryset = queryset.filter(status=Event.INCOMING)
         elif status == 'ongoing':
@@ -52,6 +54,18 @@ class EventViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(review=Event.APPROVED)
         elif review == 'rejected':
             queryset = queryset.filter(review=Event.REJECTED)
+        if start_date is not None or end_date is not None:
+            if start_date is not None and end_date is not None:
+                start_date = datetime.datetime.fromtimestamp(int(start_date) / 1000.0)
+                end_date = datetime.datetime.fromtimestamp(int(end_date) / 1000.0)
+                query = Q(start_date__gt=start_date) & Q(start_date__lt=end_date)
+            elif start_date is not None:
+                start_date = datetime.datetime.fromtimestamp(int(start_date) / 1000.0)
+                query = Q(start_date__lt=start_date)
+            elif end_date is not None:
+                end_date = datetime.datetime.fromtimestamp(int(end_date) / 1000.0)
+                query = Q(start_date__gt=end_date)
+            queryset = queryset.filter(query)
         return queryset
 
     def list(self, request):
@@ -60,12 +74,12 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         data = request.data
-        description = data['description']
-        now = timezone.now()
+        content = None
         new_event = None
+        now = timezone.now()
+        description = data['description']
         start_date = data['start_date']
         end_date = data['end_date']
-        content = None
         new_tz = tz.gettz(data['time_zone'])
         parsed_start_date = datetime.datetime(start_date['year'],
                                               start_date['month'] + 1,
@@ -97,7 +111,7 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response(content)
 
     @detail_route(methods=['get'])
-    def prizes(self, request, pk=None):
+    def prizes(self, request, pk=None, *args):
         event = self.get_object()
         prizes = Prize.objects.filter(event=event)
         serializer = PrizeSerializer(prizes, many=True)
@@ -145,3 +159,32 @@ class PrizeViewSet(viewsets.ModelViewSet):
 # make fixtures
 # check loaddata
 # dumpdata
+
+
+class ApprovalViewSet(viewsets.ModelViewSet):
+    renderer_classes = [TemplateHTMLRenderer]
+    queryset = Event.objects.all()
+    serializer_class = EventDisplaySerializer
+    template_name = 'event/request.html'
+
+    def retrieve(self, request, pk=None):
+        event = Event.objects.filter(verification_uuid=pk).first
+        serializer = EventDisplaySerializer(event)
+        return Response({'serializer': serializer, 'event': event})
+
+    @detail_route(methods=['post'])
+    def approve(self, request, pk=None):
+        event = Event.objects.filter(verification_uuid=pk).first()
+        content = None
+        if event is not None:
+            approval = request.data['Approval_val']
+            if approval is not None:
+                if approval == "Approve":
+                    event.review = Event.APPROVED
+                    content = "Approval Success"
+                elif approval == "Reject":
+                    event.review = Event.REJECTED
+                    content = "Approval Rejected"
+            event.save(update_fields=['review'])
+            serializer = EventDisplaySerializer(event)
+            return Response({'serializer': serializer, 'event': event, 'status': content})

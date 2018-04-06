@@ -6,7 +6,13 @@ from OpenTokHandler.models import Livestream
 from OpenTokHandler.models import Viewer
 from OpenTokHandler.models import Archive
 from OpenTokHandler.models import Report
+from OpenTokHandler.models import ReportType
 # Register your models here.
+
+
+class ReportTypeInline(admin.TabularInline):
+    model = ReportType
+    extra = 1
 
 
 class ReportAdmin(admin.ModelAdmin):
@@ -15,12 +21,15 @@ class ReportAdmin(admin.ModelAdmin):
             (None, {
                 'fields': ('sentby',
                            'livestream',
-                           'message',
+                           'report_type',
                            'status',)
             }),
         ]
         list_display = ('sentby', 'livestream', 'status',)
         list_filter = ('livestream', 'sentby', 'status',)
+        inline = [
+            ReportTypeInline,
+        ]
 
 
 class ArchiveAdmin(admin.ModelAdmin):

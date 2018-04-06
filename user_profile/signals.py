@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 from user_profile.models import UserProfile
 
 
+
 @receiver(post_save, sender=User)
 def ensure_user_profile_exists(sender, instance, created, **kwargs):
-    if created is False:
+    if created is True:
         UserProfile.objects.get_or_create(user=instance)

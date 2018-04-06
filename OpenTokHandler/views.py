@@ -8,13 +8,16 @@ from rest_framework.decorators import detail_route
 from rest_framework.decorators import parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import FileUploadParser
+from user_profile.models import Business
 from OpenTokHandler.models import Livestream
 from OpenTokHandler.models import Viewer
 from OpenTokHandler.models import Archive
 from OpenTokHandler.models import Report
+from OpenTokHandler.models import ReportType
 from OpenTokHandler.serializers import LivestreamSerializer
 from OpenTokHandler.serializers import ViewerSerializer
 from OpenTokHandler.serializers import ArchiveSerializer
+from OpenTokHandler.serializers import ReportTypeSerializer
 
 from opentok import OpenTok
 from opentok import Roles
@@ -98,10 +101,13 @@ class LivestreamViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['get'])
     def previewlist(self, request, pk=None):
-        livestreamer = self.get_object()
-        archives = livestreamer.archives.all()[:3]
-        serializer = ArchiveSerializer(archives, many=True)
-        return Response(serializer.data)
+        content = "Cannot send Preview List."
+        if pk != -1:
+            livestreamer = self.get_object()
+            archives = livestreamer.archives.all()[:3]
+            serializer = ArchiveSerializer(archives, many=True)
+            content = serializer.data
+        return Response(content)
 
     @detail_route(methods=['get'])
     def fulllist(self, request, pk=None):
@@ -138,12 +144,16 @@ class SubscriberViewSet(viewsets.ModelViewSet):
         user_id = self.request.query_params.get('user_id', None)
         viewer = Viewer.objects.filter(livestream=livestreamer.id,
                                        user_id=user_id).first()
+        business = Business.objects.filter(user_id=user_id).first()
+        role = Roles.moderator
+        if business is None:
+            role = Roles.subscriber
         if viewer is None:
             viewer = Viewer(livestream=livestreamer,
                             user_id=user_id)
             viewer.save()
         session_id = livestreamer.session
-        token = opentok.generate_token(session_id, Roles.subscriber)
+        token = opentok.generate_token(session_id, role)
         content = {'SESSION_ID': session_id,
                    'TOKEN_SUBSCRIBER': token,
                    'API_KEY': APIKey,
@@ -162,21 +172,26 @@ class SubscriberViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['get'])
     def report(self, request, pk=None):
-        user = Livestream.objects.filter(pk=pk).first().user
+        user = Livestream.objects.filter(user_id=pk).first().user
         livestream = self.request.query_params.get('livestream', None)
+        reporttype = self.request.query_params.get('type', None)
         content = {"statusCode": 200,
                    "message": "Report Unsuccessful",
                    "statusType": "conflict",
                    }
         if user is not None:
             sentby = User.objects.filter(pk=pk).first()
-            message = "REPORT: Bad Livestream Content"
             report = Report(sentby=sentby,
                             livestream_id=livestream,
-                            message=message)
+                            report_type_id=reporttype)
             report.save()
             content = {"statusCode": 200,
                        "message": "Report Made",
                        "statusType": "success",
                        }
         return Response(content)
+
+
+class ReportTypeViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ReportTypeSerializer
+    queryset = ReportType.objects.all()
