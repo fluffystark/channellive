@@ -6,6 +6,7 @@ from dateutil import tz
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework import viewsets
+from rest_framework.decorators import list_route
 from rest_framework.decorators import detail_route
 from rest_framework.decorators import parser_classes
 from rest_framework.parsers import FileUploadParser
@@ -14,7 +15,9 @@ from rest_framework.response import Response
 from event.models import Event
 from event.models import Category
 from event.models import Prize
+from event.models import Bookmark
 from user_profile.models import Business
+from user_profile.models import UserProfile
 from event.serializers import EventSerializer
 from event.serializers import CategorySerializer
 from event.serializers import PrizeSerializer
@@ -50,10 +53,8 @@ class EventViewSet(viewsets.ModelViewSet):
 
         if review == 'pending':
             queryset = queryset.filter(review=Event.PENDING)
-        elif review == 'approved':
+        else:
             queryset = queryset.filter(review=Event.APPROVED)
-        elif review == 'rejected':
-            queryset = queryset.filter(review=Event.REJECTED)
         if start_date is not None or end_date is not None:
             if start_date is not None and end_date is not None:
                 start_date = datetime.datetime.fromtimestamp(int(start_date) / 1000.0)
@@ -69,7 +70,20 @@ class EventViewSet(viewsets.ModelViewSet):
         return queryset
 
     def list(self, request):
-        serializer = EventSerializer(self.get_queryset(), many=True)
+        auth_code = request.META.get('HTTP_AUTHORIZATION')
+        user = UserProfile.objects.filter(auth_uuid=auth_code).first()
+        if user is not None:
+            user = user.user
+        serializer = EventSerializer(self.get_queryset(), many=True, context={'user': user})
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        event = self.get_object()
+        auth_code = request.META.get('HTTP_AUTHORIZATION')
+        user = UserProfile.objects.filter(auth_uuid=auth_code).first()
+        if user is not None:
+            user = user.user
+        serializer = EventSerializer(event, context={'user': user})
         return Response(serializer.data)
 
     def create(self, request):
@@ -135,6 +149,37 @@ class EventViewSet(viewsets.ModelViewSet):
                        "statusType": "conflict",
                        }
         return Response(content)
+
+    @list_route(methods=['get'])
+    def previewlist(self, request):
+        serializer = EventSerializer(self.get_queryset()[:5], many=True)
+        return Response(serializer.data)
+
+    @detail_route(methods=['get'])
+    def bookmark(self, request, pk=None):
+        event = self.get_object()
+        auth_code = request.META.get('HTTP_AUTHORIZATION')
+        user = UserProfile.objects.filter(auth_uuid=auth_code).first().user
+        bookmark = Bookmark.objects.filter(event=event, user=user).first()
+        if bookmark is None:
+            bookmark = Bookmark(user=user, event=event).save()
+        else:
+            bookmark.is_bookmarked = not bookmark.is_bookmarked
+            bookmark.save()
+        content = {"statusCode": 200,
+                   "message": str(bookmark.is_bookmarked),
+                   "statusType": "success", }
+        print content
+        return Response(content)
+
+    @list_route(methods=['get'])
+    def bookmarklist(self, request):
+        auth_code = request.META.get('HTTP_AUTHORIZATION')
+        user = UserProfile.objects.filter(auth_uuid=auth_code).first().user
+        query = Q(bookmarks__user=user) & Q(bookmarks__is_bookmarked=True)
+        queryset = Event.objects.filter(query)
+        serializer = EventSerializer(queryset, many=True, context={'user': user})
+        return Response(serializer.data)
 
 
 class HasEventViewSet(viewsets.ViewSet):

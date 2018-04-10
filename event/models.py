@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import uuid
 from django.contrib.auth.models import User
 from django.db import models
-
 from user_profile.models import Business
 
 REVIEW_CHOICES = {
@@ -69,3 +68,14 @@ class Prize(models.Model):
 
     def __str__(self):
         return self.event.name + "_" + self.title
+
+
+class Bookmark(models.Model):
+    event = models.ForeignKey(Event,
+                              related_name='bookmarks',)
+    user = models.ForeignKey(User,
+                             related_name='bookmarks',)
+    is_bookmarked = models.BooleanField(default=True)
+
+    def __str__(self):
+        return str(self.event.name) + "_" + str(self.user.username)

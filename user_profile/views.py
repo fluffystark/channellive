@@ -2,18 +2,24 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.decorators import list_route
 from rest_framework.decorators import detail_route
+from rest_framework.decorators import parser_classes
+from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from notification.models import Notification
 from user_profile.models import Business
 from user_profile.models import UserProfile
+from event.models import Event
 from notification.serializers import NotificationSerializer
 from user_profile.serializers import BusinessSerializer
 from user_profile.serializers import UserRegistrationSerializer
+from user_profile.serializers import ChangePasswordSerializer
 from user_profile.serializers import UserSerializer
+from event.serializers import EventSerializer
 
 
 class BusinessViewSet(viewsets.ReadOnlyModelViewSet):
@@ -43,7 +49,8 @@ class UserRegistrationViewSet(viewsets.ViewSet):
                 business_id = new_business.id
             auth = {'user_id': new_user.id,
                     'username': new_user.username,
-                    'business_id': business_id, }
+                    'business_id': business_id,
+                    'auth_code': new_user.userprofile.auth_uuid}
             content = {
                 "statusCode": "201",
                 "attribute": auth,
@@ -73,7 +80,8 @@ class LoginViewSet(viewsets.ViewSet):
         content = {'user_id': obj.id,
                    'username': obj.get_username(),
                    'business_id': business_id,
-                   'is_verified': obj.userprofile.is_verified}
+                   'is_verified': obj.userprofile.is_verified,
+                   'auth_code': obj.userprofile.auth_uuid}
         return Response(content, status=status.HTTP_200_OK)
 
 
@@ -154,7 +162,6 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(methods=['post'])
     def set_password(self, request):
         data = request.data
-        print data
         verification_code = data["verification_code"]
         password = data["password"]
         content = {
@@ -171,4 +178,121 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
                 "statusType": "success",
                 "message": "New password set.",
             }
+        return Response(content)
+
+    @list_route(methods=['post'])
+    def change_password(self, request):
+        data = request.data
+        content = {
+            "statusCode": "400",
+            "statusType": "conflict",
+            "message": "Wrong verification code sent.",
+        }
+        user = User.objects.filter(id=data["user_id"]).first()
+        if user.check_password(data['old_password']):
+            serializer = ChangePasswordSerializer(user, data=request.data)
+            serializer.is_valid()
+            serializer.save()
+            content = {
+                "statusCode": "201",
+                "statusType": "success",
+                "message": "New password set.",
+            }
+        return Response(content)
+
+    @list_route(methods=['post'])
+    def change_bio(self, request, pk=None):
+        user = self.get_object()
+        data = request.data
+        content = {
+            "statusCode": "400",
+            "statusType": "conflict",
+            "message": "Did not change bio.",
+        }
+        user.userprofile.bio = data['bio']
+        user.save()
+        content = {
+            "statusCode": "201",
+            "statusType": "success",
+            "message": "New bio set.",
+        }
+        return Response(content)
+
+    @detail_route(methods=['post'])
+    @parser_classes((FileUploadParser,))
+    def upload_image(self, request, pk=None):
+        content = {}
+        user = self.get_object()
+        if 'file' in request.data:
+            file = request.data['file']
+            user.userprofile.profilepic = file
+            print file
+            user.userprofile.save()
+            content = {"statusCode": 200,
+                       "message": user.userprofile.profilepic.url,
+                       "statusType": "success",
+                       }
+        else:
+            content = {"statusCode": 409,
+                       "message": "Problem with Image Upload",
+                       "statusType": "conflict",
+                       }
+        return Response(content)
+
+    @detail_route(methods=['get'])
+    def prizelist(self, request, pk=None):
+        check_user = self.get_object()
+        query = Q(prizes__user=check_user)
+        auth_code = request.META.get('HTTP_AUTHORIZATION')
+        user = UserProfile.objects.filter(auth_uuid=auth_code).first()
+        serializer = None
+        if user is not None:
+            user = user.user
+            queryset = Event.objects.filter(query)
+            serializer = EventSerializer(queryset, many=True, context={'user': user, 'check_user': check_user})
+        else:
+            queryset = Event.objects.filter(query)
+            serializer = EventSerializer(queryset, many=True, context={'check_user': check_user})
+        return Response(serializer.data)
+
+    @detail_route(methods=['get'])
+    def is_live(self, request, pk=None):
+        check_user = self.get_object()
+        event_id = self.request.query_params.get('event_id', None)
+        auth_code = request.META.get('HTTP_AUTHORIZATION')
+        user = UserProfile.objects.filter(auth_uuid=auth_code).first()
+        if user is not None:
+            user = user.user
+        content = {}
+        if check_user == user:
+            query = Q(livestreams__islive=True) & Q(livestreams__user=check_user)
+            is_live = User.objects.filter(query).first()
+            if is_live is None:
+                content = {"statusCode": 200,
+                           "message": "offline",
+                           "statusType": "success",
+                           }
+            else:
+                content = {"statusCode": 200,
+                           "message": "live",
+                           "statusType": "success",
+                           }
+        else:
+            livestream = check_user.livestreams.filter(event_id=event_id).first()
+            if livestream is None:
+                content = {"statusCode": 200,
+                           "message": "offline",
+                           "statusType": "success",
+                           }
+            else:
+                if livestream.is_live is True:
+                    content = {"statusCode": 200,
+                               "message": "live",
+                               "statusType": "success",
+                               }
+                else:
+                    content = {"statusCode": 200,
+                               "message": "offline",
+                               "statusType": "success",
+                               }
         return Response(content)

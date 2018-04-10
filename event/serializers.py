@@ -3,22 +3,26 @@ from rest_framework import serializers
 from event.models import Event
 from event.models import Category
 from event.models import Prize
+from event.models import Bookmark
 from OpenTokHandler.models import Livestream
 
 
 class EventSerializer(serializers.ModelSerializer):
     event_id = serializers.SerializerMethodField('get_id')
     business_id = serializers.SerializerMethodField('get_business')
+    business_name = serializers.SerializerMethodField()
     category_id = serializers.SerializerMethodField('get_category')
     start_date = serializers.SerializerMethodField()
     end_date = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
     review = serializers.SerializerMethodField()
+    is_bookmarked = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
         fields = ('event_id',
                   'business_id',
+                  'business_name',
                   'category_id',
                   'name',
                   'description',
@@ -28,7 +32,28 @@ class EventSerializer(serializers.ModelSerializer):
                   'start_date',
                   'end_date',
                   'review',
-                  'status',)
+                  'status',
+                  'is_bookmarked',)
+
+    def get_description(self, obj):
+        description = obj.description
+        if 'check_user' in self.context.keys():
+            user = self.context['check_user']
+            prize = obj.prizes.filter(user=user).first()
+            description = prize.title
+        return description
+
+    def get_is_bookmarked(self, obj):
+        is_bookmarked = False
+        if 'user' in self.context.keys():
+            user = self.context['user']
+            bookmark = obj.bookmarks.filter(user=user).first()
+            if bookmark is not None:
+                is_bookmarked = bookmark.is_bookmarked
+        return is_bookmarked
+
+    def get_business_name(self, obj):
+        return obj.business.company_name
 
     def get_id(self, obj):
         return obj.id
@@ -85,10 +110,12 @@ class CategorySerializer(serializers.ModelSerializer):
 class PrizeSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     livestream_id = serializers.SerializerMethodField()
+    user_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Prize
         fields = ('username',
+                  'user_id',
                   'title',
                   'livestream_id',)
 
@@ -97,6 +124,12 @@ class PrizeSerializer(serializers.ModelSerializer):
         if obj.user is not None:
             user = obj.user.username
         return user
+
+    def get_user_id(self, obj):
+        user_id = -1
+        if obj.user is not None:
+            user_id = obj.user.pk
+        return user_id
 
     def get_livestream_id(self, obj):
         livestream = Livestream.objects.filter(event=obj.event,
@@ -117,3 +150,11 @@ class EventDisplaySerializer(serializers.Serializer):
                   'start_date',
                   'end_date',
                   'verification_uuid')
+
+
+class EventBookmarkSerializer(serializers.Serializer):
+
+    class Meta:
+        model = Bookmark
+        fields = ('user',
+                  'event',)

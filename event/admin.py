@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
 
 from event.models import Event, Category
-from event.models import Prize
+from event.models import Prize, Bookmark
 
 
 class CategoryInline(admin.TabularInline):
@@ -85,3 +85,4 @@ class PrizeAdmin(admin.ModelAdmin):
 admin.site.register(Event, EventAdmin)
 admin.site.register(Category)
 admin.site.register(Prize, PrizeAdmin)
+admin.site.register(Bookmark)

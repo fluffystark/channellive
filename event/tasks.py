@@ -21,7 +21,7 @@ opentok = OpenTok(APIKey, secretkey)
 def update_event_status():
     now = timezone.now()
     for event in Event.objects.filter(status=Event.INCOMING):
-        if event.start_date < now < event.end_date:
+        if event.start_date < now:
             event.status = Event.ONGOING
             event.save()
     for event in Event.objects.filter(status=Event.ONGOING):
