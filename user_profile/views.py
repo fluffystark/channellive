@@ -17,7 +17,6 @@ from event.models import Event
 from notification.serializers import NotificationSerializer
 from user_profile.serializers import BusinessSerializer
 from user_profile.serializers import UserRegistrationSerializer
-from user_profile.serializers import ChangePasswordSerializer
 from user_profile.serializers import UserSerializer
 from event.serializers import EventSerializer
 
@@ -104,16 +103,27 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
     @detail_route(methods=['get'])
+    def read_notifications(self, request, pk=None):
+        user = self.get_object()
+        queryset = Notification.objects.filter(user=user)
+        queryset.update(unread=False)
+        content = {"statusCode": "201",
+                   "statusType": "success",
+                   "message": "Read Notifications",
+                   }
+        return Response(content)
+
+    @detail_route(methods=['get'])
     def verification(self, request, pk=None):
+        auth_code = request.META.get('HTTP_AUTHORIZATION')
+        print auth_code
         code = self.request.query_params.get('code', None)
-        print code
         user = UserProfile.objects.filter(user_id=pk).first()
         content = {
             "statusCode": "400",
             "statusType": "conflict",
             "message": "Account Verification Error",
         }
-        print user.verification_code
         if user is not None and code == user.verification_code:
             user.is_verified = True
             user.save(update_fields=['is_verified'])
@@ -181,36 +191,49 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(content)
 
     @list_route(methods=['post'])
-    def change_password(self, request):
+    def new_password(self, request):
         data = request.data
         content = {
             "statusCode": "400",
             "statusType": "conflict",
-            "message": "Wrong verification code sent.",
+            "message": "Unauthorized user",
         }
-        user = User.objects.filter(id=data["user_id"]).first()
-        if user.check_password(data['old_password']):
-            serializer = ChangePasswordSerializer(user, data=request.data)
-            serializer.is_valid()
-            serializer.save()
-            content = {
-                "statusCode": "201",
-                "statusType": "success",
-                "message": "New password set.",
-            }
+        auth_code = request.META.get('HTTP_AUTHORIZATION')
+        user = UserProfile.objects.filter(auth_uuid=auth_code).first()
+        if user is not None:
+            user = user.user
+            if user.check_password(data['old_password']):
+                user.set_password(data['new_password'])
+                user.save()
+                content = {
+                    "statusCode": "201",
+                    "statusType": "success",
+                    "message": "Password Updated",
+                }
+            else:
+                content = {
+                    "statusCode": "400",
+                    "statusType": "conflict",
+                    "message": "Password is incorrect",
+                }
         return Response(content)
 
     @list_route(methods=['post'])
-    def change_bio(self, request, pk=None):
-        user = self.get_object()
+    def change_bio(self, request):
+        auth_code = request.META.get('HTTP_AUTHORIZATION')
+        print auth_code
+        user = UserProfile.objects.filter(auth_uuid=auth_code).first()
+        print user
+        if user is not None:
+            user = user.user
         data = request.data
         content = {
             "statusCode": "400",
             "statusType": "conflict",
             "message": "Did not change bio.",
         }
-        user.userprofile.bio = data['bio']
-        user.save()
+        user.userprofile.bio = data
+        user.userprofile.save()
         content = {
             "statusCode": "201",
             "statusType": "success",
@@ -265,16 +288,24 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
             user = user.user
         content = {}
         if check_user == user:
-            query = Q(livestreams__islive=True) & Q(livestreams__user=check_user)
-            is_live = User.objects.filter(query).first()
-            if is_live is None:
-                content = {"statusCode": 200,
-                           "message": "offline",
-                           "statusType": "success",
-                           }
+            query = Q(livestreams__is_live=True) & Q(livestreams__user=check_user)
+            livestream_count = user.livestreams.all().count()
+            print livestream_count
+            if livestream_count > 0:
+                is_live = User.objects.filter(query).first()
+                if is_live is None:
+                    content = {"statusCode": 200,
+                               "message": "offline",
+                               "statusType": "success",
+                               }
+                else:
+                    content = {"statusCode": 200,
+                               "message": "live",
+                               "statusType": "success",
+                               }
             else:
                 content = {"statusCode": 200,
-                           "message": "live",
+                           "message": "offline",
                            "statusType": "success",
                            }
         else:

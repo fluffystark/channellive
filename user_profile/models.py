@@ -8,7 +8,17 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.conf import settings
 from django.db import models
-from user_profile.tasks import send_email_verification as verify_email
+from random import randint
+from user_profile.tasks import send_email_verification
+
+
+def code_generator():
+        code = str(randint(0, 9))
+        count = 0
+        while count < 3:
+            code += str(randint(0, 9))
+            count += 1
+        return code
 
 
 class Business(models.Model):
@@ -26,7 +36,7 @@ class UserProfile(models.Model):
     is_verified = models.BooleanField(default=False)
     verification_code = models.CharField(max_length=4,
                                          validators=[RegexValidator(r'^\d{1,10}$')],
-                                         null='',)
+                                         default=code_generator())
     profilepic = models.ImageField(upload_to='profile_pic',
                                    blank=True,
                                    null=True)
@@ -37,7 +47,7 @@ class UserProfile(models.Model):
         return self.user.username
 
     def user_send_email_verification_now(self):
-        verify_email.delay(self.user.pk)
+        send_email_verification.delay(self.user.pk)
         return "Send Email Verification."
 
     def save(self, *args, **kwargs):

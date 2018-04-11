@@ -25,9 +25,10 @@ from event.serializers import EventDisplaySerializer
 
 
 class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
     serializer_class = EventSerializer
 
-    def get_queryset(self):
+    def custom_queryset(self):
         queryset = Event.objects.all()
         category_id = self.request.query_params.get('category', None)
         name = self.request.query_params.get('name', None)
@@ -50,10 +51,9 @@ class EventViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(status=Event.ONGOING)
         elif status == 'ended':
             queryset = queryset.filter(status=Event.ENDED)
-
         if review == 'pending':
             queryset = queryset.filter(review=Event.PENDING)
-        else:
+        elif review == 'approved':
             queryset = queryset.filter(review=Event.APPROVED)
         if start_date is not None or end_date is not None:
             if start_date is not None and end_date is not None:
@@ -74,7 +74,7 @@ class EventViewSet(viewsets.ModelViewSet):
         user = UserProfile.objects.filter(auth_uuid=auth_code).first()
         if user is not None:
             user = user.user
-        serializer = EventSerializer(self.get_queryset(), many=True, context={'user': user})
+        serializer = EventSerializer(self.custom_queryset(), many=True, context={'user': user})
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
@@ -152,20 +152,23 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['get'])
     def previewlist(self, request):
-        serializer = EventSerializer(self.get_queryset()[:5], many=True)
+        serializer = EventSerializer(self.custom_queryset()[:5], many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['get'])
     def bookmark(self, request, pk=None):
         event = self.get_object()
         auth_code = request.META.get('HTTP_AUTHORIZATION')
+        print auth_code
         user = UserProfile.objects.filter(auth_uuid=auth_code).first().user
         bookmark = Bookmark.objects.filter(event=event, user=user).first()
         if bookmark is None:
-            bookmark = Bookmark(user=user, event=event).save()
+            bookmark = Bookmark(user=user, event=event)
+            bookmark.save()
         else:
             bookmark.is_bookmarked = not bookmark.is_bookmarked
             bookmark.save()
+            print bookmark
         content = {"statusCode": 200,
                    "message": str(bookmark.is_bookmarked),
                    "statusType": "success", }
@@ -175,11 +178,23 @@ class EventViewSet(viewsets.ModelViewSet):
     @list_route(methods=['get'])
     def bookmarklist(self, request):
         auth_code = request.META.get('HTTP_AUTHORIZATION')
-        user = UserProfile.objects.filter(auth_uuid=auth_code).first().user
+        user = UserProfile.objects.filter(auth_uuid=auth_code).first()
+        if user is not None:
+            user = user.user
         query = Q(bookmarks__user=user) & Q(bookmarks__is_bookmarked=True)
         queryset = Event.objects.filter(query)
         serializer = EventSerializer(queryset, many=True, context={'user': user})
         return Response(serializer.data)
+
+    @list_route(methods=['get'])
+    def count(self, request):
+        incoming_count = Event.objects.filter(status=Event.INCOMING).count()
+        ongoing_count = Event.objects.filter(status=Event.ONGOING).count()
+        ended_count = Event.objects.filter(status=Event.ENDED).count()
+        content = {"incoming": incoming_count,
+                   "ongoing": ongoing_count,
+                   "ended": ended_count, }
+        return Response(content)
 
 
 class HasEventViewSet(viewsets.ViewSet):

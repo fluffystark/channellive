@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.decorators import parser_classes
@@ -44,6 +45,17 @@ class LivestreamViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(is_live=False)
         return queryset
 
+    def list(self, request):
+        auth_code = request.META.get('HTTP_AUTHORIZATION')
+        print auth_code
+        user = UserProfile.objects.filter(auth_uuid=auth_code).first()
+        if user is not None:
+            user = user.user
+        queryset = self.get_queryset()
+        queryset = queryset.filter(~Q(user=user))
+        serializer = LivestreamSerializer(queryset, many=True)
+        return Response(serializer.data)
+
     def create(self, request):
         data = request.data
         session = opentok.create_session(media_mode=MediaModes.routed)
@@ -70,6 +82,8 @@ class LivestreamViewSet(viewsets.ModelViewSet):
     def end(self, request, pk=None):
         livestreamer = self.get_object()
         livestreamer.is_live = False
+        print livestreamer
+        print livestreamer.archive
         archive_id = str(livestreamer.archive)
         opentok.stop_archive(archive_id)
         archive = opentok.get_archive(archive_id)

@@ -13,7 +13,9 @@ app = Celery('channellive')
 # - namespace='CELERY' means all celery-related configuration keys
 #   should have a `CELERY_` prefix.
 app.config_from_object('django.conf:settings', namespace='CELERY')
-
+CELERY_TIMEZONE = 'UTC'
+CELERY_ENABLE_UTC = True
+CELERY_TIMEZONE = 'Asia/Shanghai'
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
 
@@ -29,6 +31,6 @@ app.conf.beat_schedule = {
     },
     'code-generator-every-hour': {
         'task': 'user_profile.tasks.verification_code_generator',
-        'schedule': crontab(hour='*/1')
+        'schedule': 3600.0,
     }
 }
