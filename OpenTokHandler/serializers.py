@@ -1,3 +1,4 @@
+import datetime
 from django.conf import settings
 from rest_framework import serializers
 from OpenTokHandler.models import Livestream
@@ -49,7 +50,12 @@ class LivestreamSerializer(serializers.ModelSerializer):
         return Viewer.objects.filter(livestream=obj.pk).count()
 
     def get_thumbnail(self, obj):
-        return obj.thumbnail.url
+        ret = None
+        if obj.thumbnail == "":
+            ret = "http://yuchipashe.me:8000/media/default/default_thumbnail.jpg"
+        else:
+            ret = obj.thumbnail.url
+        return ret
 
 
 class ViewerSerializer(serializers.ModelSerializer):
@@ -68,6 +74,7 @@ class ViewerSerializer(serializers.ModelSerializer):
 
 class ArchiveSerializer(serializers.ModelSerializer):
     thumbnail = serializers.SerializerMethodField()
+    timestamp = serializers.SerializerMethodField()
 
     class Meta:
         model = Archive
@@ -76,7 +83,19 @@ class ArchiveSerializer(serializers.ModelSerializer):
                   'thumbnail')
 
     def get_thumbnail(self, obj):
-        return obj.thumbnail.url
+        ret = None
+        if obj.thumbnail == "":
+            ret = "http://yuchipashe.me:8000/media/default/default_thumbnail.jpg"
+        else:
+            ret = obj.thumbnail.url
+        return ret
+      
+    def get_timestamp(self, obj):
+        epoch = datetime.datetime.utcfromtimestamp(0)
+        naive = obj.timestamp.replace(tzinfo=None)
+        ms = long((naive - epoch).total_seconds() * 1000)
+        # time = datetime.datetime.fromtimestamp(ms / 1000.0)
+        return ms
 
 
 class ReportTypeSerializer(serializers.ModelSerializer):

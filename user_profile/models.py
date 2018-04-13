@@ -52,14 +52,14 @@ class UserProfile(models.Model):
 
     def save(self, *args, **kwargs):
         super(UserProfile, self).save(*args, **kwargs)
-        if self.profilepic.name is not None:
-            length = len(self.profilepic.name)
-            old_pic = self.profilepic
-            if old_pic is not None and old_pic.name[length - 3:] == "png":
+        if self.profilepic != "":
+            if self.profilepic.name is not None:
+                length = len(self.profilepic.name)
+                old_pic = self.profilepic
                 myimage = Image.open(settings.MEDIA_ROOT + self.profilepic.name)
                 myimage = myimage.convert('RGB')
                 file = settings.MEDIA_ROOT + old_pic.name[:length - 3]
-                myimage.save(file + "jpeg", 'JPEG', quality=80)
+                myimage.save(file + "jpeg", 'JPEG', quality=50)
                 os.remove(old_pic.path)
-                self.thumbnail = old_pic.name[:length - 3] + "jpeg"
+                self.profilepic = old_pic.name[:length - 3] + "jpeg"
                 super(UserProfile, self).save(*args, **kwargs)

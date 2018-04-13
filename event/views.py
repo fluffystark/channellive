@@ -53,7 +53,7 @@ class EventViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(status=Event.ENDED)
         if review == 'pending':
             queryset = queryset.filter(review=Event.PENDING)
-        elif review == 'approved':
+        else:
             queryset = queryset.filter(review=Event.APPROVED)
         if start_date is not None or end_date is not None:
             if start_date is not None and end_date is not None:
@@ -67,6 +67,7 @@ class EventViewSet(viewsets.ModelViewSet):
                 end_date = datetime.datetime.fromtimestamp(int(end_date) / 1000.0)
                 query = Q(start_date__gt=end_date)
             queryset = queryset.filter(query)
+        queryset = queryset.order_by('start_date')
         return queryset
 
     def list(self, request):
@@ -168,7 +169,6 @@ class EventViewSet(viewsets.ModelViewSet):
         else:
             bookmark.is_bookmarked = not bookmark.is_bookmarked
             bookmark.save()
-            print bookmark
         content = {"statusCode": 200,
                    "message": str(bookmark.is_bookmarked),
                    "statusType": "success", }
@@ -188,9 +188,10 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['get'])
     def count(self, request):
-        incoming_count = Event.objects.filter(status=Event.INCOMING).count()
-        ongoing_count = Event.objects.filter(status=Event.ONGOING).count()
-        ended_count = Event.objects.filter(status=Event.ENDED).count()
+        queryset = self.custom_queryset()
+        incoming_count = queryset.filter(status=Event.INCOMING).count()
+        ongoing_count = queryset.filter(status=Event.ONGOING).count()
+        ended_count = queryset.filter(status=Event.ENDED).count()
         content = {"incoming": incoming_count,
                    "ongoing": ongoing_count,
                    "ended": ended_count, }
@@ -222,7 +223,7 @@ class PrizeViewSet(viewsets.ModelViewSet):
 
 
 class ApprovalViewSet(viewsets.ModelViewSet):
-    renderer_classes = [TemplateHTMLRenderer]
+    renderer_classes = [TemplateHTMLRenderer, ]
     queryset = Event.objects.all()
     serializer_class = EventDisplaySerializer
     template_name = 'event/request.html'

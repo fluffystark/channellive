@@ -49,9 +49,9 @@ def send_event_approval_request(event_id):
                    Name: %s \n\
                    Description: %s \n\n\
                    Click the link below to APPROVE the event request.\n\n\
-                   192.168.254.60:8000%s\n\n \
+                   yuchipashe.me%s\n\n \
                    - Channel Live Team -" % \
                   (event.name, event.description,
-                   reverse('request', args=[str(event.verification_uuid)]))
+                   reverse('request-detail', args=[str(event.verification_uuid)]))
         user.email_user(subject="Event for Approval",
                         message=message,)

@@ -85,7 +85,12 @@ class EventSerializer(serializers.ModelSerializer):
         return ret
 
     def get_image(self, obj):
-        return obj.image.url
+        ret = None
+        if obj.image == "":
+            ret = "http://yuchipashe.me:8000/media/default/default_event.jpg"
+        else:
+            ret = obj.image.url
+        return ret
 
     def get_review(self, obj):
         return obj.get_review_display()

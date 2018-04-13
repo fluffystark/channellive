@@ -31,13 +31,13 @@ class BusinessSerializer(serializers.ModelSerializer):
         return obj.company_name
 
     def get_incoming_count(self, obj):
-        return obj.events.filter(status=1).count()
+        return obj.events.filter(status=1, review=2).count()
 
     def get_ongoing_count(self, obj):
-        return obj.events.filter(status=2).count()
+        return obj.events.filter(status=2, review=2).count()
 
     def get_ended_count(self, obj):
-        return obj.events.filter(status=3).count()
+        return obj.events.filter(status=3, review=2).count()
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -92,7 +92,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_profile_pic(self, obj):
         ret = None
         if obj.userprofile.profilepic == "":
-            ret = "/media/default/avatar.png"
+            ret = "http://yuchipashe.me:8000/media/default/avatar.png"
         else:
             ret = obj.userprofile.profilepic.url
         return ret

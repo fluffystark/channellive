@@ -2,7 +2,10 @@
 from __future__ import unicode_literals
 
 import uuid
+import os
+from PIL import Image
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 from user_profile.models import Business
 
@@ -56,7 +59,25 @@ class Event(models.Model):
 
     def __unicode__(self):
         return self.name
-
+      
+    def save(self, *args, **kwargs):
+        super(Event, self).save(*args, **kwargs)
+        if self.image != "":
+            if self.image.name is not None:
+                length = len(self.image.name)
+                old_pic = self.image
+                myimage = Image.open(settings.MEDIA_ROOT + self.image.name)
+                myimage = myimage.convert('RGB')
+                if old_pic.name[length - 3:] != "jpeg":
+                    file = settings.MEDIA_ROOT + old_pic.name[:length - 3]
+                else:
+                    file = settings.MEDIA_ROOT + old_pic.name[:length - 4]
+                myimage.save(file + "jpeg", 'JPEG', quality=50)
+                os.remove(old_pic.path)
+                self.image = old_pic.name[:length - 3] + "jpeg"
+                super(Event, self).save(*args, **kwargs)
+      
+      
 
 class Prize(models.Model):
     title = models.CharField(max_length=50)

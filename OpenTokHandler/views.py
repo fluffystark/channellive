@@ -181,19 +181,21 @@ class SubscriberViewSet(viewsets.ModelViewSet):
         viewer = self.get_object()
         viewer.vote = not viewer.vote
         viewer.livestream.votes += 1 if viewer.vote is True else -1
+        print viewer.livestream.votes
+        viewer.livestream.save()
         viewer.save()
         content = viewer.vote
         return Response(content)
 
     @detail_route(methods=['get'])
     def report(self, request, pk=None):
-        user = Livestream.objects.filter(user_id=pk).first().user
         livestream = self.request.query_params.get('livestream', None)
         reporttype = self.request.query_params.get('type', None)
         content = {"statusCode": 200,
                    "message": "Report Unsuccessful",
                    "statusType": "conflict",
                    }
+        user = User.objects.filter(pk=pk).first()
         if user is not None:
             sentby = User.objects.filter(pk=pk).first()
             report = Report(sentby=sentby,
